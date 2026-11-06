@@ -5,7 +5,7 @@ description: Run the real chat UI end to end with the scripted LLM and fixture f
 
 # End-to-end UI check
 
-No API key needed: the backend runs with `tests/fakes.py::ScriptedLLM`, which calls `plan_trip` then answers.
+No API key needed: `FAKE_LLM=1` serves the backend with scripted LLMs. `scripts/e2e.mjs` drives the page; when the UI changes shape (e.g. F16 replaces the chat with a form), update the script's steps to match. It isn't locked; the acceptance specs are.
 
 1. Start the stack in the background: `FAKE_LLM=1 scripts/dev.sh` (wait until `curl -s localhost:8000/api/health` and `curl -s localhost:3000` both respond).
 2. Run `node scripts/e2e.mjs reports/screens` (set `CHROME_PATH` if Playwright's own browser isn't installed). Exit code 2 means page errors; they're printed as JSON.

@@ -2,7 +2,7 @@
 """PreToolUse: the session doing the work may not edit what judges it.
 
 Blocks (exit 2):
-- any edit to backend/tests/acceptance/
+- any edit to backend/tests/acceptance/, frontend/tests/acceptance/ or the Playwright config
 - any edit to features.json that changes anything other than `passes` values
 - shell commands that write to either
 """
@@ -14,7 +14,7 @@ import re
 import sys
 from pathlib import Path
 
-ORACLE_DIR = "backend/tests/acceptance"
+ORACLE_DIRS = ("backend/tests/acceptance", "frontend/tests/acceptance", "frontend/playwright.config.ts")
 FEATURES = "features.json"
 
 
@@ -44,12 +44,12 @@ def main() -> None:
     if tool == "Bash":
         cmd = inp.get("command", "")
         writes = re.search(r"(>|\btee\b|\bsed\s+-i|\brm\b|\bmv\b|\bcp\b|\btruncate\b|\bgit\s+(checkout|restore)\b)", cmd)
-        if writes and (ORACLE_DIR in cmd or "acceptance/" in cmd or FEATURES in cmd):
-            block(f"shell command writes to {ORACLE_DIR} or {FEATURES}")
+        if writes and (any(d in cmd for d in ORACLE_DIRS) or "acceptance/" in cmd or FEATURES in cmd):
+            block(f"shell command writes to acceptance tests or {FEATURES}")
         return
 
     path = rel(inp.get("file_path") or inp.get("notebook_path") or "", root)
-    if path.startswith(ORACLE_DIR):
+    if path.startswith(ORACLE_DIRS):
         block(f"{path} is a locked acceptance test")
 
     if path == FEATURES:

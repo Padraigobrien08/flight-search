@@ -1,33 +1,43 @@
 # Value-ranked flight search
 
-Portfolio piece. The claim it must prove: a small agentic loop plus a statistically modelled search
-planner finds better itineraries per search than an LLM choosing searches itself. Every change should
-make that claim more measurable, not just add features.
+Portfolio piece. The claim it must prove: **a statistical search planner beats an LLM agent at search, per
+search spent.** The LLM is used only where language helps: parsing stated preferences, narrating trade-offs,
+and as the (strongest possible) baseline planner. Every change should make that claim more measurable.
 
 Spec: https://claude.ai/artifact/MVm57LXnXuquYza1tEVbcG
 
+## The product
+A hosted demo of one trip done properly: Edinburgh -> Lima, home from La Paz. Form-first: dates, flexibility,
+search budget, preference sliders and one free-text preference box. Fares come from a simulator calibrated to
+real prices (known optimum, exact regret). Panels: trade-off cards, search trace, planner race (recorded
+replay + rate-limited live run), slider re-ranking. Plus a /how-it-works page, README and a Substack post.
+
 ## Commands
-- Backend tests: `cd backend && uv run pytest -q` (unit) · one feature: `uv run pytest -q <acceptance id from features.json>`
-- Run both apps: `scripts/dev.sh` (backend :8000 with fixture fares, frontend :3000)
-- UI check without an API key: the `e2e-check` skill (scripted LLM, real UI, screenshots)
-- Frontend: `cd frontend && pnpm exec tsc --noEmit`, `pnpm build`
+- Backend tests: `cd backend && uv run pytest -q` (unit) · one feature: `uv run pytest -q <acceptance id>`
+- Run both apps: `scripts/dev.sh` (`FAKE_LLM=1` for no API key)
+- Frontend acceptance specs: stack running, then `cd frontend && pnpm exec playwright test`
+- Frontend checks: `cd frontend && pnpm exec tsc --noEmit`, `pnpm build`
 
 ## How work is organised
-- `features.json` is the definition of done. Take the next feature with `passes: false` (skip milestone 4, which is Padraig's).
-  Only flip `passes` after its acceptance test passes. One feature per session.
-- `backend/tests/acceptance/` is locked: hooks block edits. If a test seems wrong, stop and say so.
+- `features.json` is the definition of done. Take the first `passes: false`, skipping milestone 4 (Padraig writes
+  the fare models). One feature per session. Flip `passes` only after its acceptance test passes.
+- `backend/tests/acceptance/`, `frontend/tests/acceptance/` and `frontend/playwright.config.ts` are locked by hooks.
+  If a test seems wrong, stop and say so.
 - End every session with the `session-report` skill. Padraig reviews reports and screenshots, not diffs.
-- Commit on a branch with a message saying which feature moved. Never push to `main`.
+- Commit on a branch; never push to `main`.
 
 ## Invariants
-- The LLM never produces a price, time or score. Numbers come from tool output; `modelView` is what the LLM sees.
-- The search planner is deterministic code, not an LLM. The only LLM-driven search is the `llm` baseline planner.
+- The LLM never produces a price, time or score. Numbers come from planner output and pass the grounding check.
+- Planners are deterministic code with the signature of `plan()`. The only LLM-driven search is the `llm` baseline,
+  which gets the strongest model, the same cached-fare tool and the same budget. Don't weaken it.
 - Every live search goes through `BudgetedProvider`; memoised repeats cost nothing.
-- The frontend is a thin view. No business logic in TypeScript.
-- `/api/chat` speaks the AI SDK UI message stream v1. The client parses chunks with strict schemas:
-  extra fields break it. Check stream changes with the e2e check, not by eye.
+- LLM calls go through `app/llm/` (OpenAI, model chosen per role, spend guard). Nothing else imports a vendor SDK.
+- The frontend is a thin view: no scoring or ranking in TypeScript; sliders call `/api/rerank`.
+- UI elements the specs use are addressed by `data-testid`; keep them stable.
 
 ## Gotchas
-- Times from providers are local to each airport; only compare times at the same airport.
-- The `fixture` provider only covers MAD, LON, PAR hubs. The simulator (F1–F3) replaces it for benchmarks.
-- `fli` breaks Google's terms: prototype only, never in tests or CI.
+- Provider times are local to each airport; only compare times at the same airport.
+- The `fixture` provider is legacy (MAD, LON, PAR only); the simulator replaces it.
+- `fli` breaks Google's terms: never in tests, CI or the hosted demo.
+- The Anthropic-based chat loop (`app/agent/`, `/api/chat`) predates the form-first design; F10 moves the LLM
+  layer to OpenAI and F11–F15 replace the chat endpoint with plain API calls.

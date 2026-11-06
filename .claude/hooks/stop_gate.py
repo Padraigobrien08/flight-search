@@ -38,7 +38,8 @@ def main() -> None:
         failures.append(f"Unit tests failing:\n{out}")
 
     features = json.loads((root / "features.json").read_text())["features"]
-    claimed = [f["acceptance"] for f in features if f.get("passes")]
+    # Frontend specs need a running stack; the session-report skill runs those.
+    claimed = [f["acceptance"] for f in features if f.get("passes") and f["acceptance"].startswith("tests/")]
     if claimed:
         ok, out = run(["uv", "run", "pytest", "-q", *claimed], backend)
         if not ok:

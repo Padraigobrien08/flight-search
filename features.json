@@ -1,8 +1,9 @@
 {
   "_rules": [
     "This file is the definition of done. Sessions may only change the `passes` field.",
-    "Set passes=true only after the feature's acceptance test passes. The Stop hook re-runs every passes=true test.",
-    "Never edit backend/tests/acceptance/. If a test looks wrong, stop and say so."
+    "Set passes=true only after the feature's acceptance test passes. The Stop hook re-runs every passes=true backend test.",
+    "Frontend acceptance specs (frontend/tests/acceptance) need the stack running; the session-report skill runs them.",
+    "Never edit backend/tests/acceptance/ or frontend/tests/acceptance/. If a test looks wrong, stop and say so."
   ],
   "features": [
     {
@@ -15,7 +16,7 @@
     {
       "id": "F2-sim-structure",
       "milestone": "1 simulator",
-      "description": "Prices come from a hierarchical model (route level x date effect x weekday x noise). Saturdays cost more than Tuesdays on average; a return is cheaper than two one-ways; cached lowest prices are noisy but correlated with true lowest prices (r > 0.8).",
+      "description": "Prices come from a hierarchical model (route level x date effect x weekday x noise), calibrated to the real fares in the spec. Saturdays cost more than Tuesdays on average; a return is cheaper than two one-ways; cached lowest prices are noisy but correlated with true lowest prices (r > 0.8).",
       "acceptance": "tests/acceptance/test_simulator.py::test_structure",
       "passes": false
     },
@@ -29,7 +30,7 @@
     {
       "id": "F4-benchmark-run",
       "milestone": "2 benchmark",
-      "description": "run_benchmark(planners, budgets, seeds, trips) returns one record per run with planner, trip, budget, seed, searches_used, best_utility, optimum_utility, regret, wall_ms. At least 10 benchmark trips. Deterministic.",
+      "description": "run_benchmark(planners, budgets, seeds, trips) returns one record per run with planner, trip, budget, seed, searches_used, best_utility, optimum_utility, regret, wall_ms. BENCHMARK_TRIPS has at least 10 variants of the Lima trip (date windows, flexibility, return vs open-jaw, preference profiles). Deterministic.",
       "acceptance": "tests/acceptance/test_benchmark.py::test_run_benchmark",
       "passes": false
     },
@@ -42,30 +43,121 @@
     },
     {
       "id": "F6-parallel-planner",
-      "milestone": "3 orchestration",
+      "milestone": "2 benchmark",
       "description": "The planner runs independent searches concurrently: with 50 ms simulated latency per search, a plan takes under half the serial time.",
       "acceptance": "tests/acceptance/test_orchestration.py::test_parallel_planner",
       "passes": false
     },
     {
+      "id": "F10-openai-layer",
+      "milestone": "3 LLM layer",
+      "description": "OpenAI replaces Anthropic behind the existing LLM protocol (internal message format unchanged; the adapter converts tools, messages and responses). Models are chosen per role in one place (parse, narrate, baseline) from settings. A SpendGuard refuses LLM calls once recorded spend passes a monthly cap.",
+      "acceptance": "tests/acceptance/test_llm_layer.py",
+      "passes": false
+    },
+    {
       "id": "F7-grounding-check",
-      "milestone": "3 orchestration",
-      "description": "unsupported_numbers(text, tool_outputs) returns every money amount or duration in the LLM's answer that does not appear in tool outputs (rounded to the pound / the tenth of an hour). The agent loop sends unsupported numbers back to the model once and reports the rate.",
+      "milestone": "3 LLM layer",
+      "description": "unsupported_numbers(text, tool_outputs) returns every money amount or duration in an LLM answer that does not appear in tool outputs (within £1 / 0.1 h). Dates, ranks and small counts are ignored.",
       "acceptance": "tests/acceptance/test_orchestration.py::test_grounding",
       "passes": false
     },
     {
       "id": "F8-llm-planner-baseline",
-      "milestone": "3 orchestration",
-      "description": "Planner 'llm': the LLM chooses searches itself through a raw search tool under the same budget. run_benchmark accepts planners=['llm'] with an injected llm_factory.",
+      "milestone": "3 LLM layer",
+      "description": "Planner 'llm': the LLM chooses searches itself through a raw search tool and the same cached-fare tool the statistical planners get, under the same budget. By default it uses the strongest OpenAI reasoning model (role 'baseline'). run_benchmark accepts planners=['llm'] with an injected llm_factory.",
       "acceptance": "tests/acceptance/test_orchestration.py::test_llm_planner_baseline",
       "passes": false
     },
     {
-      "id": "F9-voi-planner",
-      "milestone": "4 fare model (written by Padraig)",
-      "description": "Planner 'voi': a probabilistic fare model chooses searches by expected utility gain per search. Mean regret beats the heuristic planner at budgets 10 and 20 on the benchmark.",
-      "acceptance": "tests/acceptance/test_voi.py::test_voi_beats_heuristic",
+      "id": "F9a-voi-gp",
+      "milestone": "4 fare models (written by Padraig)",
+      "description": "Planner 'voi-gp': Gaussian process over hub x date x structure with a cost-aware acquisition function. Mean regret beats 'heuristic' at budgets 10 and 20.",
+      "acceptance": "tests/acceptance/test_voi.py::test_voi_gp_beats_heuristic",
+      "passes": false
+    },
+    {
+      "id": "F9b-voi-hier",
+      "milestone": "4 fare models (written by Padraig)",
+      "description": "Planner 'voi-hier': hierarchical Bayesian fare model (route/date/weekday effects, partial pooling) choosing searches by expected utility gain (Thompson sampling or knowledge gradient). Mean regret beats 'heuristic' at budgets 10 and 20.",
+      "acceptance": "tests/acceptance/test_voi.py::test_voi_hier_beats_heuristic",
+      "passes": false
+    },
+    {
+      "id": "F11-api-plan-rerank",
+      "milestone": "5 API",
+      "description": "POST /api/plan returns a plan_id, ranked itineraries and stats; POST /api/rerank re-scores the stored candidates for new preferences with no new searches and within 200 ms.",
+      "acceptance": "tests/acceptance/test_api.py::test_plan_and_rerank",
+      "passes": false
+    },
+    {
+      "id": "F12-search-trace",
+      "milestone": "5 API",
+      "description": "Every plan records a trace: ordered events (cache_bound, prune, search) with hub, slices, reason and searches_used after each search. One search event per budgeted search.",
+      "acceptance": "tests/acceptance/test_api.py::test_trace",
+      "passes": false
+    },
+    {
+      "id": "F13-race",
+      "milestone": "5 API",
+      "description": "POST /api/race returns, per planner, the best-so-far utility and regret after each search. mode=replay serves recorded runs instantly; mode=live runs fresh and is rate-limited per client (HTTP 429).",
+      "acceptance": "tests/acceptance/test_api.py::test_race",
+      "passes": false
+    },
+    {
+      "id": "F14-parse-preferences",
+      "milestone": "5 API",
+      "description": "POST /api/preferences/parse turns free text ('I'd pay £150 for a night in Madrid') into a partial Preferences update via the 'parse' model with structured output; values are clamped to valid ranges and unrelated text changes nothing.",
+      "acceptance": "tests/acceptance/test_api.py::test_parse_preferences",
+      "passes": false
+    },
+    {
+      "id": "F15-explain",
+      "milestone": "5 API",
+      "description": "POST /api/explain narrates the top options of a plan with the 'narrate' model. Answers go through the grounding check; one retry if any number is unsupported. The response reports retries and the final unsupported count.",
+      "acceptance": "tests/acceptance/test_api.py::test_explain_grounded",
+      "passes": false
+    },
+    {
+      "id": "F16-form-ui",
+      "milestone": "6 demo UI",
+      "description": "Form-first page for the Lima scenario: departure date, flexibility, search budget, preference sliders and a free-text preference box; running a search shows ranked trade-off cards.",
+      "acceptance": "frontend/tests/acceptance/form.spec.ts",
+      "passes": false
+    },
+    {
+      "id": "F17-slider-rerank-ui",
+      "milestone": "6 demo UI",
+      "description": "Moving a preference slider reorders the cards via /api/rerank only (no new /api/plan call).",
+      "acceptance": "frontend/tests/acceptance/rerank.spec.ts",
+      "passes": false
+    },
+    {
+      "id": "F18-race-trace-ui",
+      "milestone": "6 demo UI",
+      "description": "Race panel animates the recorded race (one regret line per planner) with a 'race it live' button; trace panel lists prune and search events.",
+      "acceptance": "frontend/tests/acceptance/race-trace.spec.ts",
+      "passes": false
+    },
+    {
+      "id": "F19-how-it-works",
+      "milestone": "6 demo UI",
+      "description": "/how-it-works page with sections Architecture, Fare models, Benchmark (rendering the current ablation table and regret chart from reports/latest).",
+      "acceptance": "frontend/tests/acceptance/how-it-works.spec.ts",
+      "passes": false
+    },
+    {
+      "id": "F20-preference-learning",
+      "milestone": "7 preference learning",
+      "description": "Pairwise 'would you rather' questions chosen for information gain update a posterior over preference weights (Bradley-Terry likelihood). Simulated users with known weights: after 5 answers, the top itinerary under the posterior mean matches the one under their true weights for at least 80% of users.",
+      "acceptance": "tests/acceptance/test_preferences.py::test_simulated_users_converge",
+      "passes": false
+    },
+    {
+      "id": "F21-deploy",
+      "milestone": "8 ship",
+      "description": "Backend Dockerfile (uv, non-root) and fly.toml (internal_port 8000, scale to zero); frontend deploys to Vercel with BACKEND_URL; /api/health reports version, fare source and whether the spend cap is reached.",
+      "acceptance": "tests/acceptance/test_deploy.py",
       "passes": false
     }
   ]

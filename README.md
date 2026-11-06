@@ -2,7 +2,9 @@
 
 Flight search ranked by what a journey is worth to *you*, not just its price. Ask for "Edinburgh to Lima in late May, home from La Paz", and it searches hubs, flexible dates and ticket structures nobody would try by hand, such as a night in Madrid on separate tickets or flying into one city and home from another. Then it ranks the options and explains the trade-offs.
 
-Spec: [Value-ranked flight search — spec](https://claude.ai/artifact/MVm57LXnXuquYza1tEVbcG). This repo is milestone 1: the hand-written heuristic planner.
+Spec: [Value-ranked flight search — spec](https://claude.ai/artifact/MVm57LXnXuquYza1tEVbcG).
+
+**The claim:** a statistical search planner beats an LLM agent at search, per search spent. The target product is a form-first demo of one trip (Edinburgh → Lima, home from La Paz) on a calibrated fare simulator, with a planner race, a search trace and live re-ranking. The roadmap is `features.json` (F1–F21), each feature with an acceptance test written before the code. What's here today is milestone 1: the heuristic planner and an early chat UI.
 
 ```
 frontend/  Next.js chat UI, from the Vercel AI chatbot template, stripped to the chat
@@ -62,9 +64,6 @@ The repo is set up so agent sessions can be judged by metrics and screenshots ra
 
 Start a session with `/next-feature`; read `reports/sessions/` and `PROGRESS.md` afterwards.
 
-## Next (from the spec)
+## Roadmap
 
-- A probabilistic fare model choosing searches by value of information, in place of steps 1 and 3.
-- Preference learning from pairwise questions, and rankings that hold up across the plausible weights.
-- Missed-connection risk from on-time data.
-- A benchmark of trips plus a harness plotting regret against search budget.
+See `features.json`: simulator (F1–F3), benchmark and parallel search (F4–F6), OpenAI layer, grounding check and the LLM-planner baseline (F7, F8, F10), two fare models written by hand (F9a Gaussian process, F9b hierarchical Bayesian), the demo API (F11–F15), the form-first UI (F16–F19), preference learning (F20) and deployment to Vercel and Fly.io (F21).

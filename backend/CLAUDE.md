@@ -1,8 +1,8 @@
 # Backend
 
 - `app/engine/` is the search: `planner.py` (strategy), `utility.py` (scoring, limits, Pareto), `journeys.py` (assembling legs across tickets).
-- `app/providers/` are fare sources behind two protocols in `base.py`: live (costs budget) and cached (free, stale).
-- `app/agent/` is the loop: `agent.py` (UI messages in, stream out), `tools.py` (the only place tools touch the engine), `llm.py` (swap in fakes for tests).
-- New planners must have the signature of `plan()` and return `PlanResult`, so the benchmark can run them side by side.
-- Tests use `tests/fakes.py::ScriptedLLM` for the loop; never call the real API in tests.
-- Utility values are in pounds and higher is better. Regret = optimum utility - found utility, always >= 0.
+- `app/providers/` are fare sources behind two protocols in `base.py`: live (costs budget) and cached (free, stale). The simulator (F1) implements both.
+- `app/llm/` (from F10) is the only place that talks to OpenAI: adapter, per-role routing (`parse`, `narrate`, `baseline`), spend guard. The internal message format stays content blocks (text / tool_use / tool_result).
+- Planners share `plan()`'s signature and return `PlanResult`, so the benchmark and the race can run them side by side.
+- Tests inject fake LLMs; never call a real API in tests. Utility is in pounds, higher is better; regret = optimum - found, always >= 0.
+- JSON responses can't carry inf/NaN: use null for "no itinerary yet".
