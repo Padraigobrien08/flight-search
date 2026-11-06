@@ -1,8 +1,7 @@
 [project]
 name = "flight-search-backend"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "Value-ranked flight search: planner, scoring and streaming agent"
 requires-python = ">=3.13"
 dependencies = [
     "anthropic",

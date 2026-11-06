@@ -196,6 +196,9 @@ importers:
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      geist:
+        specifier: ^1.9.1
+        version: 1.9.1(next@16.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7))
       katex:
         specifier: ^0.17.0
         version: 0.17.0
@@ -2049,6 +2052,11 @@ packages:
         optional: true
       react-dom:
         optional: true
+
+  geist@1.9.1:
+    resolution: {integrity: sha512-mkbyVjMJoNf6xz76NLeKAFwKE19BweHfFefA++wd+M9qiCX2Zncq3M96bdDwOsy4wurDQ594AKwtx+HILX+WBg==}
+    peerDependencies:
+      next: '>=13.2.0'
 
   get-east-asian-width@1.7.0:
     resolution: {integrity: sha512-XjH1AECxf0giL2V1aU8vKyRR2ppRUb5c0EvT7zuJTokQ74bNo52zOtghqdWIqrhUD79fo3x0WfKZdOqxF6LG1Q==}
@@ -4836,6 +4844,10 @@ snapshots:
     optionalDependencies:
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
+
+  geist@1.9.1(next@16.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7)):
+    dependencies:
+      next: 16.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
 
   get-east-asian-width@1.7.0: {}
 
