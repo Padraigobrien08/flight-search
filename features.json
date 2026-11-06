@@ -1,0 +1,72 @@
+{
+  "_rules": [
+    "This file is the definition of done. Sessions may only change the `passes` field.",
+    "Set passes=true only after the feature's acceptance test passes. The Stop hook re-runs every passes=true test.",
+    "Never edit backend/tests/acceptance/. If a test looks wrong, stop and say so."
+  ],
+  "features": [
+    {
+      "id": "F1-sim-determinism",
+      "milestone": "1 simulator",
+      "description": "FareSimulator(seed) implements both LiveFareProvider and CachedFareProvider; same seed gives identical tickets, different seeds give different prices.",
+      "acceptance": "tests/acceptance/test_simulator.py::test_determinism",
+      "passes": false
+    },
+    {
+      "id": "F2-sim-structure",
+      "milestone": "1 simulator",
+      "description": "Prices come from a hierarchical model (route level x date effect x weekday x noise). Saturdays cost more than Tuesdays on average; a return is cheaper than two one-ways; cached lowest prices are noisy but correlated with true lowest prices (r > 0.8).",
+      "acceptance": "tests/acceptance/test_simulator.py::test_structure",
+      "passes": false
+    },
+    {
+      "id": "F3-ground-truth",
+      "milestone": "1 simulator",
+      "description": "exhaustive_best(sim, trip, prefs) searches the full candidate space without a budget and returns the best ScoredItinerary; no budgeted plan can beat it.",
+      "acceptance": "tests/acceptance/test_simulator.py::test_ground_truth",
+      "passes": false
+    },
+    {
+      "id": "F4-benchmark-run",
+      "milestone": "2 benchmark",
+      "description": "run_benchmark(planners, budgets, seeds, trips) returns one record per run with planner, trip, budget, seed, searches_used, best_utility, optimum_utility, regret, wall_ms. At least 10 benchmark trips. Deterministic.",
+      "acceptance": "tests/acceptance/test_benchmark.py::test_run_benchmark",
+      "passes": false
+    },
+    {
+      "id": "F5-benchmark-report",
+      "milestone": "2 benchmark",
+      "description": "`uv run python -m app.bench --planners heuristic --out <dir>` writes bench.json, bench.md (an ablation table with mean regret per planner and budget) and regret.png (regret against search budget).",
+      "acceptance": "tests/acceptance/test_benchmark.py::test_cli_report",
+      "passes": false
+    },
+    {
+      "id": "F6-parallel-planner",
+      "milestone": "3 orchestration",
+      "description": "The planner runs independent searches concurrently: with 50 ms simulated latency per search, a plan takes under half the serial time.",
+      "acceptance": "tests/acceptance/test_orchestration.py::test_parallel_planner",
+      "passes": false
+    },
+    {
+      "id": "F7-grounding-check",
+      "milestone": "3 orchestration",
+      "description": "unsupported_numbers(text, tool_outputs) returns every money amount or duration in the LLM's answer that does not appear in tool outputs (rounded to the pound / the tenth of an hour). The agent loop sends unsupported numbers back to the model once and reports the rate.",
+      "acceptance": "tests/acceptance/test_orchestration.py::test_grounding",
+      "passes": false
+    },
+    {
+      "id": "F8-llm-planner-baseline",
+      "milestone": "3 orchestration",
+      "description": "Planner 'llm': the LLM chooses searches itself through a raw search tool under the same budget. run_benchmark accepts planners=['llm'] with an injected llm_factory.",
+      "acceptance": "tests/acceptance/test_orchestration.py::test_llm_planner_baseline",
+      "passes": false
+    },
+    {
+      "id": "F9-voi-planner",
+      "milestone": "4 fare model (written by Padraig)",
+      "description": "Planner 'voi': a probabilistic fare model chooses searches by expected utility gain per search. Mean regret beats the heuristic planner at budgets 10 and 20 on the benchmark.",
+      "acceptance": "tests/acceptance/test_voi.py::test_voi_beats_heuristic",
+      "passes": false
+    }
+  ]
+}

@@ -127,11 +127,18 @@ async def run_tool(name: str, args: dict[str, Any], chat_id: str, settings: Sett
             provider = budgeted(settings, 1)
             tickets = await provider.search(slices)
             view = [
-                {"price_gbp": t.price, "journeys": [
-                    {"route": " > ".join([j[0].origin] + [leg.destination for leg in j]),
-                     "carriers": sorted({leg.carrier for leg in j}),
-                     "depart": j[0].depart.isoformat(timespec="minutes"),
-                     "arrive": j[-1].arrive.isoformat(timespec="minutes")} for j in t.journeys]}
+                {
+                    "price_gbp": t.price,
+                    "journeys": [
+                        {
+                            "route": " > ".join([j[0].origin] + [leg.destination for leg in j]),
+                            "carriers": sorted({leg.carrier for leg in j}),
+                            "depart": j[0].depart.isoformat(timespec="minutes"),
+                            "arrive": j[-1].arrive.isoformat(timespec="minutes"),
+                        }
+                        for j in t.journeys
+                    ],
+                }
                 for t in tickets
             ]
             return {"ui": {"kind": "route", "tickets": view}, "model": json.dumps(view)}
@@ -140,8 +147,10 @@ async def run_tool(name: str, args: dict[str, Any], chat_id: str, settings: Sett
             updated = current.model_copy(update=Preferences.model_validate(current.model_dump() | args).model_dump())
             PREFERENCES[chat_id] = updated
             changed = {k: v for k, v in updated.model_dump().items() if current.model_dump()[k] != v}
-            return {"ui": {"kind": "preferences", "changed": changed, "preferences": updated.model_dump()},
-                    "model": json.dumps({"updated": changed})}
+            return {
+                "ui": {"kind": "preferences", "changed": changed, "preferences": updated.model_dump()},
+                "model": json.dumps({"updated": changed}),
+            }
         return {"ui": {"kind": "error", "message": f"unknown tool {name}"}, "model": f"Unknown tool {name}"}
     except ValidationError as e:
         msg = f"Invalid arguments: {e.errors(include_url=False)}"

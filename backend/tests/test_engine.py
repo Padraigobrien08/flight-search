@@ -4,21 +4,33 @@ import pytest
 
 from app.engine.journeys import build_journey, night_overlap_minutes
 from app.engine.planner import plan, sample_date_pairs
-from app.engine.utility import pareto_front, rank, score, violations
+from app.engine.utility import pareto_front, score, violations
 from app.models import Itinerary, Leg, Preferences, Ticket, TripRequest
 from app.providers.base import BudgetedProvider
 from app.providers.fixture import FixtureCache, FixtureProvider
 
 
 def leg(o, d, dep, arr, mins, carrier="X"):
-    return Leg(carrier=carrier, origin=o, destination=d, depart=datetime.fromisoformat(dep),
-               arrive=datetime.fromisoformat(arr), duration_min=mins)
+    return Leg(
+        carrier=carrier,
+        origin=o,
+        destination=d,
+        depart=datetime.fromisoformat(dep),
+        arrive=datetime.fromisoformat(arr),
+        duration_min=mins,
+    )
 
 
 def trip(**kw):
-    base = dict(origin="EDI", destination="LIM", return_from="LPB",
-                depart_earliest=date(2027, 5, 21), depart_latest=date(2027, 5, 24),
-                return_earliest=date(2027, 6, 5), return_latest=date(2027, 6, 8))
+    base = dict(
+        origin="EDI",
+        destination="LIM",
+        return_from="LPB",
+        depart_earliest=date(2027, 5, 21),
+        depart_latest=date(2027, 5, 24),
+        return_earliest=date(2027, 6, 5),
+        return_latest=date(2027, 6, 8),
+    )
     return TripRequest(**(base | kw))
 
 
@@ -28,22 +40,28 @@ def test_night_overlap():
 
 
 def test_connection_across_tickets_becomes_a_hub_night():
-    legs = [leg("EDI", "MAD", "2027-05-22T06:00", "2027-05-22T10:05", 185),
-            leg("MAD", "LIM", "2027-05-23T13:10", "2027-05-23T19:10", 720)]
+    legs = [
+        leg("EDI", "MAD", "2027-05-22T06:00", "2027-05-22T10:05", 185),
+        leg("MAD", "LIM", "2027-05-23T13:10", "2027-05-23T19:10", 720),
+    ]
     j = build_journey(legs, [0, 1])
     assert j.connections[0].hub_night and j.connections[0].nights == 1
     assert j.travel_minutes == 185 + 720  # the stay is not travel time
 
 
 def test_impossible_connection_is_rejected():
-    legs = [leg("EDI", "MAD", "2027-05-22T06:00", "2027-05-22T10:05", 185),
-            leg("MAD", "LIM", "2027-05-22T10:30", "2027-05-22T16:30", 720)]
+    legs = [
+        leg("EDI", "MAD", "2027-05-22T06:00", "2027-05-22T10:05", 185),
+        leg("MAD", "LIM", "2027-05-22T10:30", "2027-05-22T16:30", 720),
+    ]
     assert build_journey(legs, [0, 1]) is None  # 25 min self-transfer
 
 
 def test_same_day_self_transfer_violates_default_limits():
-    legs = [leg("EDI", "MAD", "2027-05-22T06:00", "2027-05-22T10:05", 185),
-            leg("MAD", "LIM", "2027-05-22T13:10", "2027-05-22T19:10", 720)]
+    legs = [
+        leg("EDI", "MAD", "2027-05-22T06:00", "2027-05-22T10:05", 185),
+        leg("MAD", "LIM", "2027-05-22T13:10", "2027-05-22T19:10", 720),
+    ]
     j = build_journey(legs, [0, 1])
     t = Ticket(provider="t", price=100, journeys=[legs])
     it = Itinerary(id="x", structure="split", tickets=[t], journeys=[j])
@@ -53,10 +71,17 @@ def test_same_day_self_transfer_violates_default_limits():
 
 def test_score_prefers_short_journey_at_equal_price():
     fast = [leg("EDI", "LIM", "2027-05-22T06:00", "2027-05-22T14:00", 900)]
-    slow = [leg("EDI", "YYZ", "2027-05-22T06:00", "2027-05-22T09:00", 450),
-            leg("YYZ", "LIM", "2027-05-22T12:00", "2027-05-22T20:00", 600)]
-    mk = lambda legs, i: Itinerary(id=i, structure="through", tickets=[Ticket(provider="t", price=800, journeys=[legs])],
-                                   journeys=[build_journey(legs, [0] * len(legs))])
+    slow = [
+        leg("EDI", "YYZ", "2027-05-22T06:00", "2027-05-22T09:00", 450),
+        leg("YYZ", "LIM", "2027-05-22T12:00", "2027-05-22T20:00", 600),
+    ]
+    def mk(legs, i):
+        return Itinerary(
+            id=i,
+            structure="through",
+            tickets=[Ticket(provider="t", price=800, journeys=[legs])],
+            journeys=[build_journey(legs, [0] * len(legs))],
+        )
     a, b = score(mk(fast, "a"), Preferences()), score(mk(slow, "b"), Preferences())
     assert a.utility > b.utility
     assert pareto_front([a, b]) == [a]

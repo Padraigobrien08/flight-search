@@ -61,13 +61,20 @@ def to_anthropic(messages: list[dict]) -> list[dict]:
             is_tool = ptype == "dynamic-tool" or ptype.startswith("tool-")
             if is_tool and p.get("state") in ("output-available", "output-error"):
                 name = p.get("toolName") or ptype.removeprefix("tool-")
-                assistant.append({"type": "tool_use", "id": p["toolCallId"], "name": name, "input": p.get("input") or {}})
+                assistant.append(
+                    {"type": "tool_use", "id": p["toolCallId"], "name": name, "input": p.get("input") or {}}
+                )
                 output = p.get("output")
                 content = (output or {}).get("modelView") if isinstance(output, dict) else None
                 if p.get("state") == "output-error":
                     content = p.get("errorText", "tool failed")
-                results.append({"type": "tool_result", "tool_use_id": p["toolCallId"],
-                                "content": content if isinstance(content, str) else json.dumps(output)})
+                results.append(
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": p["toolCallId"],
+                        "content": content if isinstance(content, str) else json.dumps(output),
+                    }
+                )
             elif ptype == "text" and p.get("text"):
                 if results:  # text after tool calls starts a new assistant turn
                     push("assistant", assistant)
@@ -79,8 +86,9 @@ def to_anthropic(messages: list[dict]) -> list[dict]:
     return out
 
 
-async def run_agent(messages: list[dict], chat_id: str, llm: LLM, settings: Settings,
-                    today: date | None = None) -> AsyncIterator[str]:
+async def run_agent(
+    messages: list[dict], chat_id: str, llm: LLM, settings: Settings, today: date | None = None
+) -> AsyncIterator[str]:
     history = to_anthropic(messages)
     system = SYSTEM_PROMPT.format(today=(today or date.today()).isoformat())
     yield ui.start(f"msg-{uuid.uuid4().hex[:12]}")
@@ -122,8 +130,14 @@ async def run_agent(messages: list[dict], chat_id: str, llm: LLM, settings: Sett
                     tool_results.append({"type": "tool_result", "tool_use_id": block["id"], "content": out["model"]})
                 except Exception as e:  # report tool failures to both the user and the model
                     yield ui.tool_error(block["id"], str(e))
-                    tool_results.append({"type": "tool_result", "tool_use_id": block["id"],
-                                         "content": f"Tool failed: {e}", "is_error": True})
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": block["id"],
+                            "content": f"Tool failed: {e}",
+                            "is_error": True,
+                        }
+                    )
             history.append({"role": "user", "content": tool_results})
             yield ui.finish_step()
         yield ui.finish()

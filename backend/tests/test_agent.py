@@ -16,7 +16,7 @@ def parse(lines: list[str]) -> list[dict | str]:
     for block in "".join(lines).split("\n\n"):
         if not block.startswith("data: "):
             continue
-        payload = block[len("data: "):]
+        payload = block[len("data: ") :]
         out.append(payload if payload == "[DONE]" else json.loads(payload))
     return out
 
@@ -42,13 +42,23 @@ async def test_agent_streams_text_tool_call_and_result(settings):
 async def test_history_round_trip_includes_tool_results(settings):
     chunks = parse(await collect([USER], ScriptedLLM(), settings))
     tool_out = next(c for c in chunks if isinstance(c, dict) and c["type"] == "tool-output-available")
-    assistant = {"id": "a1", "role": "assistant", "parts": [
-        {"type": "step-start"},
-        {"type": "text", "text": "Searching hubs and dates."},
-        {"type": "dynamic-tool", "toolName": "plan_trip", "toolCallId": "toolu_1", "state": "output-available",
-         "input": {"origin": "EDI"}, "output": tool_out["output"]},
-        {"type": "text", "text": "Madrid is best."},
-    ]}
+    assistant = {
+        "id": "a1",
+        "role": "assistant",
+        "parts": [
+            {"type": "step-start"},
+            {"type": "text", "text": "Searching hubs and dates."},
+            {
+                "type": "dynamic-tool",
+                "toolName": "plan_trip",
+                "toolCallId": "toolu_1",
+                "state": "output-available",
+                "input": {"origin": "EDI"},
+                "output": tool_out["output"],
+            },
+            {"type": "text", "text": "Madrid is best."},
+        ],
+    }
     follow = {"id": "u2", "role": "user", "parts": [{"type": "text", "text": "and without Madrid?"}]}
     msgs = to_anthropic([USER, assistant, follow])
     assert [m["role"] for m in msgs] == ["user", "assistant", "user", "assistant", "user"]

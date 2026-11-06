@@ -31,13 +31,9 @@ class FliProvider:
         from fli.search import SearchFlights
 
         is_return = (
-            len(slices) == 2
-            and slices[0].origin == slices[1].destination
-            and slices[0].destination == slices[1].origin
+            len(slices) == 2 and slices[0].origin == slices[1].destination and slices[0].destination == slices[1].origin
         )
-        trip_type = (
-            TripType.ONE_WAY if len(slices) == 1 else TripType.ROUND_TRIP if is_return else TripType.MULTI_CITY
-        )
+        trip_type = TripType.ONE_WAY if len(slices) == 1 else TripType.ROUND_TRIP if is_return else TripType.MULTI_CITY
         filters = FlightSearchFilters(
             trip_type=trip_type,
             passenger_info=PassengerInfo(adults=1),

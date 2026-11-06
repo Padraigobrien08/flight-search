@@ -41,5 +41,7 @@ class AnthropicLLM:
                 elif event.type == "content_block_start" and event.content_block.type == "text":
                     yield ""  # marks a new text block
             final = await stream.get_final_message()
-        yield TurnResult(content=[b.model_dump(exclude_none=True) for b in final.content],
-                         stop_reason=final.stop_reason or "end_turn")
+        yield TurnResult(
+            content=[b.model_dump(exclude_none=True) for b in final.content],
+            stop_reason=final.stop_reason or "end_turn",
+        )

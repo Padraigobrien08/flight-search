@@ -72,7 +72,9 @@ def score(it: Itinerary, prefs: Preferences) -> ScoredItinerary:
 
     b["stopover"] = prefs.stopover_bonus * hub_nights
     if hub_nights:
-        flags.append(f"{hub_nights} planned stay(s) in {it.hub}, {sum(c.nights for j in it.journeys for c in j.connections)} night(s)")
+        flags.append(
+            f"{hub_nights} planned stay(s) in {it.hub}, {sum(c.nights for j in it.journeys for c in j.connections)} night(s)"
+        )
 
     red_eye = sum(1 for j in it.journeys if 0 <= j.arrival.hour < 6)
     b["red_eye_arrival"] = -prefs.red_eye_arrival_penalty * red_eye
@@ -120,9 +122,7 @@ def rank(items: list[ScoredItinerary], prefs: Preferences, top_k: int = 5) -> li
     out: list[ScoredItinerary] = []
     for s in front:
         sig = tuple(
-            (leg.carrier, leg.flight_number, leg.depart.isoformat())
-            for j in s.itinerary.journeys
-            for leg in j.legs
+            (leg.carrier, leg.flight_number, leg.depart.isoformat()) for j in s.itinerary.journeys for leg in j.legs
         )
         if sig in seen:
             continue

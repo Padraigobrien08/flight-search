@@ -16,10 +16,31 @@ from app.models import Leg, Slice, Ticket
 
 # Late-May UTC offsets, enough to make local arrival times realistic.
 UTC_OFFSET = {
-    "EDI": 1, "LHR": 1, "LGW": 1, "STN": 1, "LTN": 1, "LIS": 1, "DUB": 1,
-    "MAD": 2, "BCN": 2, "CDG": 2, "ORY": 2, "AMS": 2, "FRA": 2, "MXP": 2, "ZRH": 2,
-    "LIM": -5, "BOG": -5, "PTY": -5, "LPB": -4, "VVI": -4, "YUL": -4, "YYZ": -4,
-    "GRU": -3, "MIA": -4, "CUZ": -5,
+    "EDI": 1,
+    "LHR": 1,
+    "LGW": 1,
+    "STN": 1,
+    "LTN": 1,
+    "LIS": 1,
+    "DUB": 1,
+    "MAD": 2,
+    "BCN": 2,
+    "CDG": 2,
+    "ORY": 2,
+    "AMS": 2,
+    "FRA": 2,
+    "MXP": 2,
+    "ZRH": 2,
+    "LIM": -5,
+    "BOG": -5,
+    "PTY": -5,
+    "LPB": -4,
+    "VVI": -4,
+    "YUL": -4,
+    "YYZ": -4,
+    "GRU": -3,
+    "MIA": -4,
+    "CUZ": -5,
 }
 
 
@@ -55,8 +76,18 @@ ROUTES: dict[tuple[str, str], list[Template]] = {
     ("EDI", "LIM"): [
         T([("KLM", "EDI", "AMS", 80), ("KLM", "AMS", "LIM", 765)], [80], "06:00", _ret(1174)),
         T([("Air France", "EDI", "CDG", 105), ("Air France", "CDG", "LIM", 775)], [85], "05:40", _ret(1097)),
-        T([("Air France", "EDI", "CDG", 115), ("Avianca", "CDG", "BOG", 650), ("Avianca", "BOG", "LIM", 200)], [120, 70], "11:35", _ret(942)),
-        T([("Air Canada", "EDI", "YYZ", 450), ("Air Canada", "YYZ", "YUL", 80), ("Air Canada", "YUL", "LIM", 420)], [150, 165], "09:00", _ret(915)),
+        T(
+            [("Air France", "EDI", "CDG", 115), ("Avianca", "CDG", "BOG", 650), ("Avianca", "BOG", "LIM", 200)],
+            [120, 70],
+            "11:35",
+            _ret(942),
+        ),
+        T(
+            [("Air Canada", "EDI", "YYZ", 450), ("Air Canada", "YYZ", "YUL", 80), ("Air Canada", "YUL", "LIM", 420)],
+            [150, 165],
+            "09:00",
+            _ret(915),
+        ),
     ],
     # Long-haul from hubs
     ("MAD", "LIM"): [
@@ -71,11 +102,16 @@ ROUTES: dict[tuple[str, str], list[Template]] = {
         T([("Avianca", "CDG", "BOG", 655), ("Avianca", "BOG", "LIM", 200)], [280], "08:55", _ret(774)),
         T([("Air France", "CDG", "LIM", 755)], [], "10:10", _ret(1086)),
     ],
-    ("LIS", "LIM"): [T([("Air Europa", "LIS", "MAD", 75), ("Air Europa", "MAD", "LIM", 700)], [85], "20:05", _ret(728))],
+    ("LIS", "LIM"): [
+        T([("Air Europa", "LIS", "MAD", 75), ("Air Europa", "MAD", "LIM", 700)], [85], "20:05", _ret(728))
+    ],
     ("AMS", "LIM"): [T([("KLM", "AMS", "LIM", 765)], [], "10:10", _ret(950))],
     ("BCN", "LIM"): [T([("LEVEL", "BCN", "LIM", 775)], [], "13:40", _ret(766))],
     # Positioning from Edinburgh
-    ("EDI", "MAD"): [T([("easyJet", "EDI", "MAD", 185)], [], "06:00", _ret(168)), T([("Ryanair", "EDI", "MAD", 180)], [], "16:25", _ret(272))],
+    ("EDI", "MAD"): [
+        T([("easyJet", "EDI", "MAD", 185)], [], "06:00", _ret(168)),
+        T([("Ryanair", "EDI", "MAD", 180)], [], "16:25", _ret(272)),
+    ],
     ("EDI", "STN"): [T([("Ryanair", "EDI", "STN", 85)], [], "07:00", _ret(52))],
     ("EDI", "LTN"): [T([("easyJet", "EDI", "LTN", 80)], [], "08:55", _ret(76))],
     ("EDI", "LHR"): [T([("British Airways", "EDI", "LHR", 85)], [], "07:10", _ret(140))],
@@ -88,7 +124,14 @@ ROUTES: dict[tuple[str, str], list[Template]] = {
         T([("BoA", "LPB", "VVI", 60), ("BoA", "VVI", "LIM", 175)], [195], "15:40", 226),
         T([("Avianca", "LPB", "BOG", 225), ("Avianca", "BOG", "LIM", 200)], [75], "03:25", 234),
     ],
-    ("LPB", "EDI"): [T([("Avianca", "LPB", "BOG", 225), ("KLM", "BOG", "AMS", 600), ("KLM", "AMS", "EDI", 85)], [120, 140], "03:25", 600)],
+    ("LPB", "EDI"): [
+        T(
+            [("Avianca", "LPB", "BOG", 225), ("KLM", "BOG", "AMS", 600), ("KLM", "AMS", "EDI", 85)],
+            [120, 140],
+            "03:25",
+            600,
+        )
+    ],
     ("LPB", "MAD"): [T([("Avianca", "LPB", "BOG", 225), ("Avianca", "BOG", "MAD", 585)], [95], "03:25", 394)],
     ("LPB", "LHR"): [T([("Avianca", "LPB", "BOG", 225), ("Avianca", "BOG", "LHR", 615)], [255], "03:25", 490)],
     ("LPB", "CDG"): [T([("Avianca", "LPB", "BOG", 225), ("Avianca", "BOG", "CDG", 610)], [240], "03:25", 450)],
@@ -119,12 +162,22 @@ def _legs(t: Template, day: date) -> list[Leg]:
     legs: list[Leg] = []
     clock = datetime.combine(day, t.depart)  # local time at the hop's origin
     for i, hop in enumerate(t.hops):
-        arrive = clock + timedelta(minutes=hop.minutes) + timedelta(
-            hours=UTC_OFFSET.get(hop.destination, 0) - UTC_OFFSET.get(hop.origin, 0)
+        arrive = (
+            clock
+            + timedelta(minutes=hop.minutes)
+            + timedelta(hours=UTC_OFFSET.get(hop.destination, 0) - UTC_OFFSET.get(hop.origin, 0))
         )
-        legs.append(Leg(carrier=hop.carrier, flight_number=f"{hop.carrier[:2].upper()}{100 + i}",
-                        origin=hop.origin, destination=hop.destination, depart=clock, arrive=arrive,
-                        duration_min=hop.minutes))
+        legs.append(
+            Leg(
+                carrier=hop.carrier,
+                flight_number=f"{hop.carrier[:2].upper()}{100 + i}",
+                origin=hop.origin,
+                destination=hop.destination,
+                depart=clock,
+                arrive=arrive,
+                duration_min=hop.minutes,
+            )
+        )
         if i < len(t.layovers):
             clock = arrive + timedelta(minutes=t.layovers[i])
     return legs
@@ -143,8 +196,13 @@ class FixtureProvider:
             price *= _jitter("|".join(f"{s.origin}{s.destination}{s.date}" for s in slices) + str(combo[0].depart))
             if slices[0].date.weekday() == 5:  # Saturdays are busy
                 price *= 1.12
-            tickets.append(Ticket(provider=self.name, price=round(price, 2),
-                                  journeys=[_legs(t, s.date) for t, s in zip(combo, slices, strict=True)]))
+            tickets.append(
+                Ticket(
+                    provider=self.name,
+                    price=round(price, 2),
+                    journeys=[_legs(t, s.date) for t, s in zip(combo, slices, strict=True)],
+                )
+            )
         tickets.sort(key=lambda t: t.price)
         return tickets[:max_results]
 

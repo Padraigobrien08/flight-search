@@ -14,8 +14,7 @@ from app.models import PlanResult, Preferences, TripRequest
 from app.providers.factory import budgeted, cache_provider
 
 app = FastAPI(title="Value-ranked flight search")
-app.add_middleware(CORSMiddleware, allow_origins=get_settings().cors_origins, allow_methods=["*"],
-                   allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=get_settings().cors_origins, allow_methods=["*"], allow_headers=["*"])
 
 
 class ChatRequest(BaseModel):
@@ -31,14 +30,19 @@ def get_llm(settings: Settings = Depends(get_settings)) -> LLM:
 
 @app.get("/api/health")
 def health(settings: Settings = Depends(get_settings)) -> dict:
-    return {"ok": True, "fare_provider": settings.fare_provider, "cache": cache_provider(settings).name,
-            "llm": settings.anthropic_model if settings.anthropic_api_key else None}
+    return {
+        "ok": True,
+        "fare_provider": settings.fare_provider,
+        "cache": cache_provider(settings).name,
+        "llm": settings.anthropic_model if settings.anthropic_api_key else None,
+    }
 
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest, llm: LLM = Depends(get_llm), settings: Settings = Depends(get_settings)):
-    return StreamingResponse(run_agent(req.messages, req.id, llm, settings), media_type="text/event-stream",
-                             headers=ui.HEADERS)
+    return StreamingResponse(
+        run_agent(req.messages, req.id, llm, settings), media_type="text/event-stream", headers=ui.HEADERS
+    )
 
 
 class PlanRequest(BaseModel):

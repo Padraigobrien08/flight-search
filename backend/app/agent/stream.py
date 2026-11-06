@@ -48,8 +48,9 @@ def text_end(part_id: str) -> str:
 
 
 def tool_input(call_id: str, name: str, args: Any) -> str:
-    return sse({"type": "tool-input-available", "toolCallId": call_id, "toolName": name,
-                "input": args, "dynamic": True})
+    return sse(
+        {"type": "tool-input-available", "toolCallId": call_id, "toolName": name, "input": args, "dynamic": True}
+    )
 
 
 def tool_output(call_id: str, output: Any) -> str:

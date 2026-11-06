@@ -132,7 +132,9 @@ class TripRequest(BaseModel):
 
     origin: str = Field(description="IATA code of home airport or city, e.g. EDI")
     destination: str = Field(description="IATA code where the trip starts, e.g. LIM")
-    return_from: str | None = Field(None, description="IATA code the trip ends at, if not the destination (open-jaw), e.g. LPB")
+    return_from: str | None = Field(
+        None, description="IATA code the trip ends at, if not the destination (open-jaw), e.g. LPB"
+    )
     depart_earliest: date
     depart_latest: date
     return_earliest: date

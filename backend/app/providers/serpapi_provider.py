@@ -35,20 +35,33 @@ class SerpApiProvider:
             "gl": "uk",
         }
         is_return = (
-            len(slices) == 2
-            and slices[0].origin == slices[1].destination
-            and slices[0].destination == slices[1].origin
+            len(slices) == 2 and slices[0].origin == slices[1].destination and slices[0].destination == slices[1].origin
         )
         if len(slices) == 1:
-            params |= {"type": 2, "departure_id": slices[0].origin, "arrival_id": slices[0].destination,
-                       "outbound_date": slices[0].date.isoformat()}
+            params |= {
+                "type": 2,
+                "departure_id": slices[0].origin,
+                "arrival_id": slices[0].destination,
+                "outbound_date": slices[0].date.isoformat(),
+            }
         elif is_return:
-            params |= {"type": 1, "departure_id": slices[0].origin, "arrival_id": slices[0].destination,
-                       "outbound_date": slices[0].date.isoformat(), "return_date": slices[1].date.isoformat()}
+            params |= {
+                "type": 1,
+                "departure_id": slices[0].origin,
+                "arrival_id": slices[0].destination,
+                "outbound_date": slices[0].date.isoformat(),
+                "return_date": slices[1].date.isoformat(),
+            }
         else:
-            params |= {"type": 3, "multi_city_json": json.dumps(
-                [{"departure_id": s.origin, "arrival_id": s.destination, "date": s.date.isoformat()} for s in slices]
-            )}
+            params |= {
+                "type": 3,
+                "multi_city_json": json.dumps(
+                    [
+                        {"departure_id": s.origin, "arrival_id": s.destination, "date": s.date.isoformat()}
+                        for s in slices
+                    ]
+                ),
+            }
         return params
 
     async def search(self, slices: list[Slice], max_results: int = 5) -> list[Ticket]:
@@ -72,8 +85,9 @@ class SerpApiProvider:
                     token = nxt_opts[0].get("departure_token")
                 if len(journeys) < len(slices) or not price:
                     continue
-                tickets.append(Ticket(provider=self.name, price=float(price), currency=self.currency,
-                                      journeys=journeys))
+                tickets.append(
+                    Ticket(provider=self.name, price=float(price), currency=self.currency, journeys=journeys)
+                )
             return tickets
 
     async def _get(self, client: httpx.AsyncClient, params: dict) -> dict:
