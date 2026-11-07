@@ -46,7 +46,7 @@
       "milestone": "2 benchmark",
       "description": "The planner runs independent searches concurrently: with 50 ms simulated latency per search, a plan takes under half the serial time.",
       "acceptance": "tests/acceptance/test_orchestration.py::test_parallel_planner",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F10-openai-layer",

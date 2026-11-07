@@ -47,4 +47,11 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - reports/latest: heuristic £183 / 69 / 30 / 30 realistic, £188 / 36 / 30 / 30 unbiased; identical to F4; 56 s for both.
 - Chart: reference palette, fixed colour per planner, direct end labels spread apart; checked with a 4-planner layout render.
 - 48 unit tests pass; F1-F5 acceptance green. matplotlib added. Next: F6 parallel planner.
+
+## 2026-11-07 — F6-parallel-planner
+- plan() searches in 3 concurrent waves; it replays the serial budget rules so PlanResult is unchanged.
+- BudgetedProvider shares in-flight searches; SimConfig.latency_s added.
+- Acceptance scenario: 870 ms serial -> 214 ms concurrent, 16 searches. Benchmark records identical to F5 except wall_ms.
+- 64 unit tests pass (16 equivalence tests against a frozen serial planner); F1-F6 acceptance green.
+- Next: F10 OpenAI layer (milestone 3 runs F10, F7, F8 in features.json order).
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
