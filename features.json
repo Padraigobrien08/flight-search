@@ -67,7 +67,7 @@
       "milestone": "3 LLM layer",
       "description": "Planner 'llm': the LLM chooses searches itself through a raw search tool and the same cached-fare tool the statistical planners get, under the same budget. By default it uses the strongest OpenAI reasoning model (role 'baseline'). run_benchmark accepts planners=['llm'] with an injected llm_factory.",
       "acceptance": "tests/acceptance/test_orchestration.py::test_llm_planner_baseline",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F9a-voi-gp",

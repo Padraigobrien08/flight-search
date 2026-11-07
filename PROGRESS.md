@@ -67,4 +67,11 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - Support is typed by JSON key (money vs hours/minutes), so counts can't vouch for prices or durations.
 - 95 unit tests pass (22 new, incl. sentences built from a real PlanResult); F1-F7 + F10 acceptance green.
 - Open: times of day and scores are not checked yet; derived differences are flagged by design. Next: F8 llm baseline.
+
+## 2026-11-07 — F8-llm-planner-baseline
+- app/engine/llm_planner.py: LLM picks searches (search_route, cached_price, best_so_far); code assembles and scores.
+- Candidate space moved to app/engine/space.py; run_benchmark takes llm_factory; CLI runs `llm` only when named.
+- 102 unit tests pass; F1-F8 + F10 acceptance green. Heuristic benchmark records unchanged.
+- Not yet run against a real model (no key, api.openai.com blocked here). Full llm grid likely exceeds the $20 cap.
+- Next: F11 /api/plan + /api/rerank (F9a/F9b are Padraig's).
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
