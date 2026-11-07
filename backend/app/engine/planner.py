@@ -15,6 +15,7 @@ information; this module is the baseline that model has to beat.
 
 from __future__ import annotations
 
+import asyncio
 import itertools
 from datetime import date, timedelta
 
@@ -129,9 +130,34 @@ def assemble(
     )
 
 
+async def _search_prefix(live: BudgetedProvider, slice_lists: list[list[Slice]]) -> tuple[list[list[Ticket]], bool]:
+    """Run, concurrently, the leading searches a serial loop would get through before the budget ran out.
+
+    Returns their results in order and whether the budget stopped the loop early (the serial
+    version would have raised BudgetExhausted at that point).
+    """
+    remaining, seen, fit = live.remaining, set(), []
+    for slices in slice_lists:
+        k = live.key(slices)
+        cost = 0 if live.is_free(slices) or k in seen else 1
+        if cost and remaining < 1:
+            return list(await asyncio.gather(*(live.search(s) for s in fit))), True
+        remaining -= cost
+        seen.add(k)
+        fit.append(slices)
+    return list(await asyncio.gather(*(live.search(s) for s in fit))), False
+
+
 async def plan(
     req: TripRequest, prefs: Preferences, live: BudgetedProvider, cache: CachedFareProvider, top_k: int = 5
 ) -> PlanResult:
+    """The heuristic, with independent searches run concurrently in three waves.
+
+    Wave 1: through tickets for every sampled date pair. Wave 2: the open-jaw fix and every
+    chosen hub's long-haul search (both depend only on wave 1). Wave 3: positioning around
+    each long-haul. Which searches run is decided by replaying the serial loop's budget rules
+    exactly, so the result is the same as searching one at a time, only faster.
+    """
     notes: list[str] = []
     pruned: list[PruneNote] = []
     candidates: list[Itinerary] = []
@@ -139,15 +165,17 @@ async def plan(
     open_jaw = req.end_airport != req.destination
 
     try:
-        # 2. Through tickets: the baseline.
+        # 2. Through tickets: the baseline. (Wave 1.)
+        results, stopped = await _search_prefix(live, [_through_slices(req, d, r) for d, r in pairs])
         through_by_pair: dict[tuple[date, date], list[Ticket]] = {}
-        for d, r in pairs:
-            tickets = await live.search(_through_slices(req, d, r))
+        for (d, r), tickets in zip(pairs, results, strict=False):
             through_by_pair[(d, r)] = tickets
             for t in tickets:
                 it = single_ticket_itinerary(t, len(candidates))
                 if it:
                     candidates.append(it)
+        if stopped:
+            raise live.exhausted()
         if not candidates:
             notes.append("No through tickets found for the sampled dates.")
         baseline_scored = [score(c, prefs) for c in candidates]
@@ -155,24 +183,29 @@ async def plan(
         # A hub routing can't be much faster than the fastest through routing.
         fastest_hours = min((sum(j.travel_minutes for j in c.journeys) / 60 for c in candidates), default=0.0)
         best_pair = min(through_by_pair, key=lambda p: min((t.price for t in through_by_pair[p]), default=1e9))
+        d, r = best_pair
 
         # 5. Open-jaw alternative: return to the destination, plus a one-way from the end city.
+        fix_slices: list[list[Slice]] = []
         if open_jaw:
-            d, r = best_pair
-            back = await live.search([Slice(origin=req.end_airport, destination=req.destination, date=r)])
-            ret = await live.search(
+            fix_slices = [
+                [Slice(origin=req.end_airport, destination=req.destination, date=r)],
                 [
                     Slice(origin=req.origin, destination=req.destination, date=d),
                     Slice(origin=req.destination, destination=req.origin, date=r + timedelta(days=1)),
-                ]
-            )
-            for (i, b), (k, t) in itertools.product(enumerate(back[:2]), enumerate(ret[:3])):
-                it = assemble([t, b], [(0, 0)], [(1, 0), (0, 1)], req.destination, prefs, f"fix-{i}-{k}")
-                if it:
-                    candidates.append(it)
+                ],
+            ]
+        # The serial planner searched the fix before bounding hubs; if the fix doesn't fit, it stopped there.
+        budget_left, seen = live.remaining, set()
+        for slices in fix_slices:
+            cost = 0 if live.is_free(slices) or live.key(slices) in seen else 1
+            if cost and budget_left < 1:
+                await _search_prefix(live, fix_slices)
+                raise live.exhausted()
+            budget_left -= cost
+            seen.add(live.key(slices))
 
-        # 3. Bound hubs with cached prices and prune.
-        d, r = best_pair
+        # 3. Bound hubs with cached prices and prune. (Free: no budget.)
         bounded: list[tuple[float, str]] = []
         for code in hubs_for(req.destination, req.hubs):
             hub = HUBS[code]
@@ -198,52 +231,128 @@ async def plan(
                 bounded.append((-u_bound, code))
         bounded.sort()
 
-        # 4. Search surviving hubs, best bound first.
-        for bound, code in bounded:
-            if live.remaining < 2:
-                pruned.append(
-                    PruneNote(hub=code, reason="search budget used up", bound=None if bound == float("inf") else bound)
-                )
-                continue
+        # The cheapest arrival airport per hub, from the cache.
+        arrive: dict[str, str] = {}
+        for _, code in bounded:
             hub = HUBS[code]
-            long_slices = [
-                Slice(origin=hub.longhaul_airport, destination=req.destination, date=d),
-                Slice(origin=req.end_airport, destination=hub.longhaul_airport, date=r),
+            arrive[code] = hub.arrival_airports[0]
+            if len(hub.arrival_airports) > 1:
+                prices = [(await cache.lowest_price(req.origin, a, d, r) or 1e9, a) for a in hub.arrival_airports]
+                arrive[code] = min(prices)[1]
+
+        def long_slices(code: str) -> list[Slice]:
+            return [
+                Slice(origin=HUBS[code].longhaul_airport, destination=req.destination, date=d),
+                Slice(origin=req.end_airport, destination=HUBS[code].longhaul_airport, date=r),
             ]
-            longs = await live.search(long_slices)
-            if not longs:
-                pruned.append(PruneNote(hub=code, reason="no long-haul fares found"))
-                continue
-            lead = longs[0]
+
+        def positioning(code: str, lead: Ticket) -> list[tuple[date, list[Slice]]]:
             out_day = lead.journeys[0][0].depart.date()
             back_day = lead.journeys[1][-1].arrive.date()
-            arrive_airport = hub.arrival_airports[0]
-            if len(hub.arrival_airports) > 1:  # pick the cheapest arrival airport from the cache
-                prices = [(await cache.lowest_price(req.origin, a, d, r) or 1e9, a) for a in hub.arrival_airports]
-                arrive_airport = min(prices)[1]
             options = [(out_day - timedelta(days=1), back_day + timedelta(days=1))]  # planned nights
             if prefs.allow_same_day_self_transfer:
                 options.append((out_day, back_day))
-            for pos_out, pos_back in options:
-                if live.remaining < 1:
-                    break
-                pos = await live.search(
+            a = arrive[code]
+            return [
+                (
+                    po,
                     [
-                        Slice(origin=req.origin, destination=arrive_airport, date=pos_out),
-                        Slice(origin=arrive_airport, destination=req.origin, date=pos_back),
-                    ]
+                        Slice(origin=req.origin, destination=a, date=po),
+                        Slice(origin=a, destination=req.origin, date=pb),
+                    ],
                 )
-                for (i, lt), (k, pt) in itertools.product(enumerate(longs[:3]), enumerate(pos[:2])):
-                    it = assemble(
-                        [pt, lt],
-                        [(0, 0), (1, 0)],
-                        [(1, 1), (0, 1)],
-                        code,
-                        prefs,
-                        f"{code.lower()}-{pos_out:%m%d}-{i}-{k}",
-                    )
-                    if it:
-                        candidates.append(it)
+                for po, pb in options
+            ]
+
+        # 4. Search surviving hubs, best bound first, replaying the serial loop's budget rules.
+        # Searches that cost nothing in the serial hub loop: everything it had already done, the fix included.
+        free = live.known_keys() | seen
+
+        def replay(longs: dict[str, list[Ticket]]) -> list[tuple]:
+            """The serial hub loop's decisions, given the long-haul results known so far.
+
+            An unknown long-haul is assumed to return fares and its positioning to cost a search each.
+            """
+            remaining, spent = budget_left, set(seen)
+            steps: list[tuple] = []
+            for bound, code in bounded:
+                if remaining < 2:
+                    steps.append(("skip", code, bound))
+                    continue
+                k = live.key(long_slices(code))
+                remaining -= 0 if k in free or k in spent else 1
+                spent.add(k)
+                if code not in longs:
+                    n = 2 if prefs.allow_same_day_self_transfer else 1
+                    remaining -= min(n, max(remaining, 0))
+                    steps.append(("unknown", code))
+                    continue
+                if not longs[code]:
+                    steps.append(("no-long", code))
+                    continue
+                chosen = []
+                for po, slices in positioning(code, longs[code][0]):
+                    if remaining < 1:
+                        break
+                    k = live.key(slices)
+                    remaining -= 0 if k in free or k in spent else 1
+                    spent.add(k)
+                    chosen.append((po, slices))
+                steps.append(("hub", code, chosen))
+            return steps
+
+        # Wave 2: the fix and the long-hauls together; repeat only if an empty long-haul freed budget.
+        longs: dict[str, list[Ticket]] = {}
+        fix_results: list[list[Ticket]] | None = None
+        while True:
+            need = [s[1] for s in replay(longs) if s[0] == "unknown"]
+            batch = (fix_slices if fix_results is None else []) + [long_slices(c) for c in need]
+            if not batch:
+                break
+            got = list(await asyncio.gather(*(live.search(s) for s in batch)))
+            if fix_results is None:
+                fix_results, got = got[: len(fix_slices)], got[len(fix_slices) :]
+            longs.update(zip(need, got, strict=True))
+            if not need:
+                break
+        steps = replay(longs)
+
+        if open_jaw and fix_results:
+            back, ret = fix_results
+            for (i, b), (k, t) in itertools.product(enumerate(back[:2]), enumerate(ret[:3])):
+                it = assemble([t, b], [(0, 0)], [(1, 0), (0, 1)], req.destination, prefs, f"fix-{i}-{k}")
+                if it:
+                    candidates.append(it)
+
+        # Wave 3: every positioning search at once.
+        wanted = [slices for s in steps if s[0] == "hub" for _, slices in s[2]]
+        pos_results = dict(
+            zip(map(live.key, wanted), await asyncio.gather(*(live.search(s) for s in wanted)), strict=True)
+        )
+
+        for step in steps:
+            if step[0] == "skip":
+                _, code, bound = step
+                pruned.append(
+                    PruneNote(hub=code, reason="search budget used up", bound=None if bound == float("inf") else bound)
+                )
+            elif step[0] == "no-long":
+                pruned.append(PruneNote(hub=step[1], reason="no long-haul fares found"))
+            else:
+                _, code, chosen = step
+                for pos_out, slices in chosen:
+                    pos = pos_results[live.key(slices)]
+                    for (i, lt), (k, pt) in itertools.product(enumerate(longs[code][:3]), enumerate(pos[:2])):
+                        it = assemble(
+                            [pt, lt],
+                            [(0, 0), (1, 0)],
+                            [(1, 1), (0, 1)],
+                            code,
+                            prefs,
+                            f"{code.lower()}-{pos_out:%m%d}-{i}-{k}",
+                        )
+                        if it:
+                            candidates.append(it)
     except BudgetExhausted as e:
         notes.append(str(e))
 

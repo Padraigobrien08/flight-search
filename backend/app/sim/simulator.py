@@ -8,6 +8,7 @@ prices). Routes and schedules come from `network.py` (fixed data); prices from
 
 from __future__ import annotations
 
+import asyncio
 import itertools
 import math
 from datetime import date
@@ -30,6 +31,8 @@ class FareSimulator:
         return [(svc, s) for svc, s in schedules(origin, destination) if day.weekday() in svc.days]
 
     async def search(self, slices: list[Slice], max_results: int = 5) -> list[Ticket]:
+        if self.config.latency_s:
+            await asyncio.sleep(self.config.latency_s)
         if not slices or not all(self.model.bookable(s.date) for s in slices):
             return []
         per_slice = [self._flying(s.origin, s.destination, s.date) for s in slices]

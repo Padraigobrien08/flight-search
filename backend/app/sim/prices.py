@@ -46,6 +46,7 @@ class SimConfig:
     cache_staleness_days: int = 7  # observations are 1..staleness days old
     cache_drift_per_day: float = 0.004  # fares rise as seats sell: older observations are lower
     cache_volatility_scale: float = 1.0
+    latency_s: float = 0.0  # simulated wait per live search (the cache stays instant)
     calendar_start: date = date(2026, 11, 6)  # "today" in the simulated world; earlier dates can't be booked
 
 
