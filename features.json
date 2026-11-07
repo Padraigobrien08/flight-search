@@ -11,7 +11,7 @@
       "milestone": "1 simulator",
       "description": "FareSimulator(seed) implements both LiveFareProvider and CachedFareProvider; same seed gives identical tickets, different seeds give different prices.",
       "acceptance": "tests/acceptance/test_simulator.py::test_determinism",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F2-sim-structure",
