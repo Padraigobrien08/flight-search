@@ -39,7 +39,7 @@
       "milestone": "2 benchmark",
       "description": "`uv run python -m app.bench --planners heuristic --out <dir>` writes bench.json, bench.md (an ablation table with mean regret per planner and budget) and regret.png (regret against search budget).",
       "acceptance": "tests/acceptance/test_benchmark.py::test_cli_report",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F6-parallel-planner",

@@ -41,4 +41,10 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - Heuristic, 12 trips x 3 seeds: mean regret £183 / 69 / 30 / 30 at budgets 5 / 10 / 20 / 30; it plateaus at ~16 searches.
 - Unbiased cache: £188 / 36 / 30 / 30 (the realistic cache's optimism costs £33 at budget 10). 0 misses, no negative regret.
 - 45 unit tests pass; F1-F4 acceptance green. Next: F5 CLI report (bench.json, bench.md, regret.png).
+
+## 2026-11-07 — F5-benchmark-report
+- `python -m app.bench` writes bench.json, bench.md (ablation tables, misses in cell) and regret.png (panel per cache).
+- reports/latest: heuristic £183 / 69 / 30 / 30 realistic, £188 / 36 / 30 / 30 unbiased; identical to F4; 56 s for both.
+- Chart: reference palette, fixed colour per planner, direct end labels spread apart; checked with a 4-planner layout render.
+- 48 unit tests pass; F1-F5 acceptance green. matplotlib added. Next: F6 parallel planner.
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
