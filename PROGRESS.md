@@ -61,4 +61,10 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - Defaults: gpt-6-astra for all roles (only near-official price found; openai.com blocked here), $20/month cap.
 - 73 unit tests pass; F1-F6 + F10 acceptance green. Anthropic SDK removed.
 - Open: Padraig to confirm models and prices; F8 needs BenchTrip.origin etc. Next: F7 grounding check.
+
+## 2026-11-07 — F7-grounding-check
+- app/agent/grounding.py: unsupported_numbers; claims are numbers with a currency or duration unit.
+- Support is typed by JSON key (money vs hours/minutes), so counts can't vouch for prices or durations.
+- 95 unit tests pass (22 new, incl. sentences built from a real PlanResult); F1-F7 + F10 acceptance green.
+- Open: times of day and scores are not checked yet; derived differences are flagged by design. Next: F8 llm baseline.
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.

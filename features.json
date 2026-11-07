@@ -60,7 +60,7 @@
       "milestone": "3 LLM layer",
       "description": "unsupported_numbers(text, tool_outputs) returns every money amount or duration in an LLM answer that does not appear in tool outputs (within £1 / 0.1 h). Dates, ranks and small counts are ignored.",
       "acceptance": "tests/acceptance/test_orchestration.py::test_grounding",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F8-llm-planner-baseline",
