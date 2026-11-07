@@ -32,7 +32,7 @@
       "milestone": "2 benchmark",
       "description": "run_benchmark(planners, budgets, seeds, trips) returns one record per run with planner, trip, budget, seed, searches_used, best_utility, optimum_utility, regret, wall_ms. BENCHMARK_TRIPS has at least 10 variants of the Lima trip (date windows, flexibility, return vs open-jaw, preference profiles). Deterministic.",
       "acceptance": "tests/acceptance/test_benchmark.py::test_run_benchmark",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F5-benchmark-report",

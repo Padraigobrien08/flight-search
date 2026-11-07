@@ -35,4 +35,10 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - NETWORK.md claims 1, 2 (on fares), 4, 5, 7 hold against the optimum (`python -m app.sim.claims`).
 - Heuristic regret preview, open-jaw Lima: £254 / 107 / 68 / 68 at budgets 5 / 10 / 20 / 30; it plateaus at 16 searches.
 - Next: F4 benchmark (compute each optimum once per trip x seed x preferences).
+
+## 2026-11-07 — F4-benchmark-run
+- `app/bench/`: BENCHMARK_TRIPS (12 Lima variants) and run_benchmark; optimum computed once per trip x seed.
+- Heuristic, 12 trips x 3 seeds: mean regret £183 / 69 / 30 / 30 at budgets 5 / 10 / 20 / 30; it plateaus at ~16 searches.
+- Unbiased cache: £188 / 36 / 30 / 30 (the realistic cache's optimism costs £33 at budget 10). 0 misses, no negative regret.
+- 45 unit tests pass; F1-F4 acceptance green. Next: F5 CLI report (bench.json, bench.md, regret.png).
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
