@@ -13,3 +13,10 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - LLM vendor: OpenAI, model per role. Hosting: Vercel + Fly.io. Simulator instead of real snapshots.
 - features.json extended to F21 with acceptance tests written first (backend pytest + frontend Playwright specs).
 - Next: F1 simulator.
+
+## 2026-11-07 — F1-sim-determinism
+- `app/sim/FareSimulator(seed)`: live `search()` + cached `lowest_price()`; sha256-keyed draws, independent of call order.
+- Prices = fixture anchors x 0.8 multi-slice x lognormal noise; cache = cheapest level x noise. No weekday/date effect yet.
+- 17 unit tests pass (+4); F1 acceptance green. Heuristic plan() runs on the sim within budget.
+- Open: network still borrowed from fixture.py private helpers; protect_oracle hook flags `2>&1` and `<email>` as writes.
+- Next: F2 hierarchical price model.
