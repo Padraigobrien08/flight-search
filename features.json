@@ -53,7 +53,7 @@
       "milestone": "3 LLM layer",
       "description": "OpenAI replaces Anthropic behind the existing LLM protocol (internal message format unchanged; the adapter converts tools, messages and responses). Models are chosen per role in one place (parse, narrate, baseline) from settings. A SpendGuard refuses LLM calls once recorded spend passes a monthly cap.",
       "acceptance": "tests/acceptance/test_llm_layer.py",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F7-grounding-check",

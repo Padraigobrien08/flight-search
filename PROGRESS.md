@@ -54,4 +54,11 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - Acceptance scenario: 870 ms serial -> 214 ms concurrent, 16 searches. Benchmark records identical to F5 except wall_ms.
 - 64 unit tests pass (16 equivalence tests against a frozen serial planner); F1-F6 acceptance green.
 - Next: F10 OpenAI layer (milestone 3 runs F10, F7, F8 in features.json order).
+
+## 2026-11-07 — F10-openai-layer
+- app/llm/: Responses API adapter, per-role models, SpendGuard (monthly, ledger, fails closed on unpriced models).
+- Reasoning items carried through history (encrypted, store=False) so the llm baseline isn't weakened.
+- Defaults: gpt-6-astra for all roles (only near-official price found; openai.com blocked here), $20/month cap.
+- 73 unit tests pass; F1-F6 + F10 acceptance green. Anthropic SDK removed.
+- Open: Padraig to confirm models and prices; F8 needs BenchTrip.origin etc. Next: F7 grounding check.
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
