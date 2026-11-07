@@ -26,7 +26,7 @@ from app.engine.hubs import HUBS, hubs_for
 from app.engine.space import candidates
 from app.engine.utility import rank, score
 from app.llm.base import LLM, TurnResult
-from app.models import PlanResult, Preferences, Slice, Ticket, TripRequest
+from app.models import Itinerary, PlanResult, Preferences, Slice, Ticket, TripRequest
 from app.providers.base import BudgetedProvider, BudgetExhausted, CachedFareProvider
 
 MAX_CACHE_LOOKUPS = 300
@@ -168,9 +168,12 @@ class _SearchedOnly:
         return self.live.memoised(slices) or []
 
 
+async def _built(req: TripRequest, prefs: Preferences, live: BudgetedProvider) -> list[Itinerary]:
+    return await candidates(_SearchedOnly(live), req, prefs)
+
+
 async def _ranked(req: TripRequest, prefs: Preferences, live: BudgetedProvider, top_k: int):
-    built = await candidates(_SearchedOnly(live), req, prefs)
-    return rank([score(it, prefs) for it in built], prefs, top_k=top_k)
+    return rank([score(it, prefs) for it in await _built(req, prefs, live)], prefs, top_k=top_k)
 
 
 async def llm_plan(
@@ -256,14 +259,16 @@ async def llm_plan(
     else:
         notes.append(f"stopped after {max_turns} LLM turns")
 
+    built = await _built(req, prefs, live)
     return PlanResult(
         request=req,
         preferences=prefs,
-        ranked=await _ranked(req, prefs, live, top_k),
+        ranked=rank([score(it, prefs) for it in built], prefs, top_k=top_k),
         pruned=[],
         searches_used=live.used,
         search_budget=live.budget,
         date_pairs=[],
         notes=notes,
         llm_usage=usage,
+        candidates=built,
     )

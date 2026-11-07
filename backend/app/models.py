@@ -172,3 +172,5 @@ class PlanResult(BaseModel):
     date_pairs: list[tuple[date, date]]
     notes: list[str] = []
     llm_usage: dict[str, int] = {}  # LLM-driven planners only: input/cached/output tokens, turns
+    # Every itinerary the planner assembled, before ranking; kept for re-ranking, never serialised.
+    candidates: list[Itinerary] = Field(default_factory=list, exclude=True)

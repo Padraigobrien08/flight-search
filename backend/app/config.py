@@ -21,8 +21,9 @@ class Settings(BaseSettings):
     llm_monthly_cap_usd: float = 20.0
     llm_spend_ledger: str | None = "var/llm_spend.json"  # None keeps spend in memory only
 
-    # Which live fare source to use. "fixture" needs no network or keys.
-    fare_provider: Literal["fixture", "fli", "serpapi"] = "fixture"
+    # Which live fare source to use. "simulator" and "fixture" need no network or keys.
+    fare_provider: Literal["simulator", "fixture", "fli", "serpapi"] = "fixture"
+    sim_seed: int = 0  # simulator only: which seeded fare world the demo shows
     serpapi_api_key: str | None = None
     travelpayouts_token: str | None = None
     currency: str = "GBP"

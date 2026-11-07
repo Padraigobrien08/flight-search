@@ -24,6 +24,7 @@ from app.engine.journeys import build_journey
 from app.engine.utility import rank, score
 from app.models import (
     Itinerary,
+    Journey,
     Leg,
     PlanResult,
     Preferences,
@@ -110,15 +111,8 @@ def assemble(
             return None
         journeys.append(j)
     stays = sum(1 for j in journeys for c in j.connections if c.hub_night)
-    nights = sum(c.nights for j in journeys for c in j.connections)
-    changes = sum(1 for j in journeys for c in j.connections if "->" in c.airport)
     structure = "stopover" if stays else "split"
-    extra = nights * prefs.hotel_cost_per_night + changes * AIRPORT_CHANGE_COST
-    note_bits = []
-    if nights:
-        note_bits.append(f"{nights} hotel night(s) at ~£{prefs.hotel_cost_per_night:g}")
-    if changes:
-        note_bits.append(f"{changes} airport transfer(s) at ~£{AIRPORT_CHANGE_COST:g}")
+    extra, note = _extras(journeys, prefs)
     return Itinerary(
         id=ident,
         structure=structure,
@@ -126,8 +120,29 @@ def assemble(
         tickets=tickets,
         journeys=journeys,
         extra_cost=extra,
-        extra_cost_note=", ".join(note_bits) or None,
+        extra_cost_note=note,
     )
+
+
+def _extras(journeys: list[Journey], prefs: Preferences) -> tuple[float, str | None]:
+    """Hotel nights for planned hub stays and airport transfers, priced with these preferences."""
+    nights = sum(c.nights for j in journeys for c in j.connections)
+    changes = sum(1 for j in journeys for c in j.connections if "->" in c.airport)
+    extra = nights * prefs.hotel_cost_per_night + changes * AIRPORT_CHANGE_COST
+    note_bits = []
+    if nights:
+        note_bits.append(f"{nights} hotel night(s) at ~£{prefs.hotel_cost_per_night:g}")
+    if changes:
+        note_bits.append(f"{changes} airport transfer(s) at ~£{AIRPORT_CHANGE_COST:g}")
+    return extra, ", ".join(note_bits) or None
+
+
+def reprice(it: Itinerary, prefs: Preferences) -> Itinerary:
+    """The same itinerary with its extras (hotel nights, transfers) priced for other preferences."""
+    if it.structure == "through":
+        return it
+    extra, note = _extras(it.journeys, prefs)
+    return it.model_copy(update={"extra_cost": extra, "extra_cost_note": note})
 
 
 async def _search_prefix(live: BudgetedProvider, slice_lists: list[list[Slice]]) -> tuple[list[list[Ticket]], bool]:
@@ -367,4 +382,5 @@ async def plan(
         search_budget=live.budget,
         date_pairs=pairs,
         notes=notes,
+        candidates=candidates,
     )

@@ -5,7 +5,15 @@ from app.providers.base import BudgetedProvider, CachedFareProvider, LiveFarePro
 from app.providers.fixture import FixtureCache, FixtureProvider
 
 
+def _simulator(settings: Settings):  # noqa: ANN202
+    from app.sim import FareSimulator
+
+    return FareSimulator(seed=settings.sim_seed)
+
+
 def live_provider(settings: Settings) -> LiveFareProvider:
+    if settings.fare_provider == "simulator":
+        return _simulator(settings)
     if settings.fare_provider == "serpapi":
         if not settings.serpapi_api_key:
             raise RuntimeError("FARE_PROVIDER=serpapi needs SERPAPI_API_KEY")
@@ -20,6 +28,8 @@ def live_provider(settings: Settings) -> LiveFareProvider:
 
 
 def cache_provider(settings: Settings) -> CachedFareProvider:
+    if settings.fare_provider == "simulator":  # the simulator's own stale cache, never a real one
+        return _simulator(settings)
     if settings.travelpayouts_token:
         from app.providers.travelpayouts import TravelpayoutsCache
 
