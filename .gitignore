@@ -8,3 +8,4 @@ node_modules/
 .DS_Store
 reports/screens/
 backend/var/
+reports/playwright/

@@ -88,7 +88,7 @@
       "milestone": "5 API",
       "description": "POST /api/plan returns a plan_id, ranked itineraries and stats; POST /api/rerank re-scores the stored candidates for new preferences with no new searches and within 200 ms.",
       "acceptance": "tests/acceptance/test_api.py::test_plan_and_rerank",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F12-search-trace",

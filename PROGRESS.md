@@ -74,4 +74,11 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - 102 unit tests pass; F1-F8 + F10 acceptance green. Heuristic benchmark records unchanged.
 - Not yet run against a real model (no key, api.openai.com blocked here). Full llm grid likely exceeds the $20 cap.
 - Next: F11 /api/plan + /api/rerank (F9a/F9b are Padraig's).
+
+## 2026-11-07 — F11-api-plan-rerank
+- /api/plan returns plan_id + ranking + stats and stores all candidates; /api/rerank re-scores them (~5 ms, no searches).
+- reprice() recomputes hotel/transfer extras for new preferences; fare_provider="simulator" added.
+- 108 unit tests pass; backend acceptance F1-F8, F10, F11 green. Frontend specs F16-F19 fail (not built yet).
+- ui-evaluator FAIL on the legacy chat: misleading "non-stop" with a hub night, fake narration contradicting
+  ranking, ±£1 vs-cheapest rounding; inputs for F16/F15. Next: F12 search trace.
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
