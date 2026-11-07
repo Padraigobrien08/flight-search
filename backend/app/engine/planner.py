@@ -78,7 +78,7 @@ def _through_slices(req: TripRequest, d: date, r: date) -> list[Slice]:
     ]
 
 
-def _single_ticket_itinerary(t: Ticket, idx: int) -> Itinerary | None:
+def single_ticket_itinerary(t: Ticket, idx: int) -> Itinerary | None:
     journeys = []
     for legs in t.journeys:
         j = build_journey(legs, [0] * len(legs))
@@ -145,7 +145,7 @@ async def plan(
             tickets = await live.search(_through_slices(req, d, r))
             through_by_pair[(d, r)] = tickets
             for t in tickets:
-                it = _single_ticket_itinerary(t, len(candidates))
+                it = single_ticket_itinerary(t, len(candidates))
                 if it:
                     candidates.append(it)
         if not candidates:
