@@ -18,7 +18,7 @@ The browser talks only to Next. Next proxies `/api/*` to FastAPI, which runs the
 ```bash
 # backend
 cd backend
-cp .env.example .env          # add ANTHROPIC_API_KEY
+cp .env.example .env          # add OPENAI_API_KEY
 uv sync
 uv run uvicorn app.main:app --reload --port 8000
 

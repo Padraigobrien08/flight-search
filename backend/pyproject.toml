@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "Value-ranked flight search: planner, scoring and streaming agent"
 requires-python = ">=3.13"
 dependencies = [
-    "anthropic",
     "fastapi",
     "httpx",
     "matplotlib>=3.11.2",
+    "openai>=3.46.0",
     "pydantic",
     "pydantic-settings",
     "uvicorn[standard]",

@@ -7,9 +7,9 @@ from pydantic import BaseModel
 
 from app.agent import stream as ui
 from app.agent.agent import run_agent
-from app.agent.llm import LLM, AnthropicLLM
 from app.config import Settings, get_settings
 from app.engine.planner import plan
+from app.llm import LLM, ROLES, LLMFactory, llm_factory, model_for, spend_guard
 from app.models import PlanResult, Preferences, TripRequest
 from app.providers.factory import budgeted, cache_provider
 
@@ -22,10 +22,17 @@ class ChatRequest(BaseModel):
     messages: list[dict]
 
 
-def get_llm(settings: Settings = Depends(get_settings)) -> LLM:
-    if not settings.anthropic_api_key:
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY is not set")
-    return AnthropicLLM(settings.anthropic_api_key, settings.anthropic_model)
+def get_llm_factory(settings: Settings = Depends(get_settings)) -> LLMFactory:
+    """role -> LLM (parse, narrate, baseline). Tests override this with fakes."""
+    try:
+        return llm_factory(settings)
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+def get_llm(factory: LLMFactory = Depends(get_llm_factory)) -> LLM:
+    """The legacy chat loop narrates, so it uses the narrate model."""
+    return factory("narrate")
 
 
 @app.get("/api/health")
@@ -34,7 +41,9 @@ def health(settings: Settings = Depends(get_settings)) -> dict:
         "ok": True,
         "fare_provider": settings.fare_provider,
         "cache": cache_provider(settings).name,
-        "llm": settings.anthropic_model if settings.anthropic_api_key else None,
+        "llm": {role: model_for(role, settings) for role in ROLES} if settings.openai_api_key else None,
+        "llm_spend_usd_this_month": round(spend_guard(settings).spent(), 4),
+        "spend_cap_reached": spend_guard(settings).reached(),
     }
 
 
