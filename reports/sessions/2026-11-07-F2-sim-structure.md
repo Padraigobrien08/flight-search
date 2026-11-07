@@ -40,14 +40,24 @@ Not run: nothing under `frontend/` or the API changed.
 - `app/sim/calibrate.py`: reproduces the tables above.
 
 ## Open problems
-- **Question for Padraig: the heuristic's open-jaw bound.** On the open-jaw, `plan()` bounds a hub with
+- **Baseline change (Padraig chose "fix it"; commit `e9a880a`).** On the open-jaw, `plan()` bounded a hub with
   cached one-way(hub to LIM) + cached one-way(LPB to hub). The live hub ticket is one multi-city booking at 0.8 x the
-  sum of one-ways, so the bound sits 12-15% above the live price for every hub (median over 20 seeds) and the heuristic
-  over-prunes. I didn't change it: the heuristic is the baseline, and fixing it moves the number the fare models must
-  beat.
-- **The Barcelona trap works relatively, not absolutely, under that bound.** By cached bound Barcelona ranks 2nd of
-  six hubs; by live price it ranks 4th. NETWORK.md says the bound is "far below" the live price; that holds for the
-  cache itself (0.75) but not for the heuristic's open-jaw bound (1.04).
+  sum of one-ways, so the bound sat 12-15% above the live price for every hub (median over 20 seeds) and wasn't a best
+  case. It now applies the 0.8 (`MULTI_CITY_DISCOUNT`, in `longhaul_bound()`), and the bound sits 7-8% below the live
+  price, 14% for Barcelona. Effect on the open-jaw Lima trip (window 21-24 May / 5-8 Jun, 10 seeds):
+
+  | Budget | Hubs pruned by bound, before / after | Mean best utility £, before / after |
+  | --- | --- | --- |
+  | 10 | 0.7 / 0.0 | -1503 / -1522 |
+  | 20 | 0.7 / 0.0 | -1483 / -1483 |
+  | 30 | 0.7 / 0.0 | -1483 / -1483 |
+
+  The fix makes the heuristic £19 worse on average at budget 10. All of that comes from seeds 2 and 4, where the
+  corrected order searches a different hub first (London, then Paris) and the budget runs out before Madrid or
+  Barcelona. The old bug was helping by accident. No benchmark numbers existed before the fix.
+- **The Barcelona trap works relatively.** By cached bound Barcelona ranks 2nd of six hubs; by live price it ranks
+  4th. Its cache is 0.75 of the live price; under the heuristic's corrected open-jaw bound it is 0.86 (other hubs
+  0.92-0.93).
 - **Calibration shortcuts.** Date-pair noise is 0.5% and long-haul weekday effects about 1%, set from a single spec
   observation (under £15 for a 3-day shift). These two parameters decide how much a fare model can gain, so they
   should be benchmark sweep axes rather than fixed truths.

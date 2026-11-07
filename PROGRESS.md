@@ -25,5 +25,7 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - NETWORK.md first (seven stated reasons), then `network.py` (32 services, sourced anchors) and `prices.py` (SimConfig).
 - Calibrated: £763/£911/£920 against the spec's £762/£911/£915; anchors within 3%; 3-day shift median £15.
 - Cache = lowest of 4 stale observations: 6-7% optimistic on legacy long-haul, 25% on BCN; UNBIASED_CACHE about 0%.
-- 22 unit tests pass; F1 and F2 acceptance green. Open: the heuristic's open-jaw bound sits 12-15% high (question for Padraig).
+- 22 unit tests pass; F1 and F2 acceptance green.
+- Baseline change (Padraig: fix it): open-jaw bound now gets the 0.8 multi-city discount (was 12-15% high).
+  Budget-10 mean best utility -1503 -> -1522 (2/10 seeds search a different hub first); budgets 20/30 unchanged. 25 tests.
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
