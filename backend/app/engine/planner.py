@@ -34,6 +34,23 @@ from app.models import (
 from app.providers.base import BudgetedProvider, BudgetExhausted, CachedFareProvider
 
 AIRPORT_CHANGE_COST = 20.0  # e.g. Stansted -> Heathrow by coach
+# A multi-city ticket (hub -> destination, end city -> hub) prices like a return: about 0.8 x two one-ways.
+MULTI_CITY_DISCOUNT = 0.8
+
+
+async def longhaul_bound(
+    cache: CachedFareProvider, req: TripRequest, hub_airport: str, d: date, r: date
+) -> float | None:
+    """Cached best case for the hub's long-haul ticket, or None when the cache can't price it.
+
+    On an open-jaw the cache only has one-ways for each direction, but the live search books both on one
+    multi-city ticket, so the sum gets the same discount the ticket would.
+    """
+    if req.end_airport == req.destination:
+        return await cache.lowest_price(hub_airport, req.destination, d, r)
+    a = await cache.lowest_price(hub_airport, req.destination, d)
+    b = await cache.lowest_price(req.end_airport, hub_airport, r)
+    return MULTI_CITY_DISCOUNT * (a + b) if a and b else None
 
 
 def _days(a: date, b: date) -> list[date]:
@@ -160,12 +177,7 @@ async def plan(
         for code in hubs_for(req.destination, req.hubs):
             hub = HUBS[code]
             pos = [p for p in [await cache.lowest_price(req.origin, a, d, r) for a in hub.arrival_airports] if p]
-            if open_jaw:
-                a = await cache.lowest_price(hub.longhaul_airport, req.destination, d)
-                b = await cache.lowest_price(req.end_airport, hub.longhaul_airport, r)
-                long = a + b if a and b else None
-            else:
-                long = await cache.lowest_price(hub.longhaul_airport, req.destination, d, r)
+            long = await longhaul_bound(cache, req, hub.longhaul_airport, d, r)
             if not pos or long is None:
                 bounded.append((float("inf"), code))  # unknown: search last
                 continue
