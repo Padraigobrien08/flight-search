@@ -2,7 +2,7 @@
 
 1 planner(s) x 12 trips x 3 seeds (0, 1, 2) x budgets 5, 10, 20, 30. Regret = optimum utility - best found, in £; lower is better, 0 is the exhaustive optimum. Means are over runs that found an itinerary; misses are shown in the cell.
 
-Command: `uv run python -m app.bench --planners heuristic --budgets 5 10 20 30 --seeds 0 1 2 --out ../reports/latest`
+Command: `uv run python -m app.bench --out ../reports/latest`
 
 ![Regret against search budget](regret.png)
 
@@ -34,7 +34,7 @@ Command: `uv run python -m app.bench --planners heuristic --budgets 5 10 20 30 -
 
 | Planner | Budget 5 | Budget 10 | Budget 20 | Budget 30 |
 | --- | --- | --- | --- | --- |
-| heuristic | 62 | 61 | 63 | 63 |
+| heuristic | 61 | 63 | 65 | 64 |
 
 ## Mean regret (£) by trip: heuristic, realistic cache
 

@@ -20,6 +20,35 @@ class BenchTrip:
     prefs: Preferences = field(default_factory=Preferences)
     why: str = ""
 
+    # The request's fields, read straight off the trip.
+    @property
+    def origin(self) -> str:
+        return self.request.origin
+
+    @property
+    def destination(self) -> str:
+        return self.request.destination
+
+    @property
+    def return_from(self) -> str | None:
+        return self.request.return_from
+
+    @property
+    def depart_earliest(self) -> date:
+        return self.request.depart_earliest
+
+    @property
+    def depart_latest(self) -> date:
+        return self.request.depart_latest
+
+    @property
+    def return_earliest(self) -> date:
+        return self.request.return_earliest
+
+    @property
+    def return_latest(self) -> date:
+        return self.request.return_latest
+
 
 def _req(out: date, back: date, flex: int = 1, return_from: str | None = "LPB") -> TripRequest:
     return TripRequest(

@@ -67,6 +67,10 @@ class BudgetedProvider:
         k = self.key(slices)
         return k in self._memo or k in self._inflight
 
+    def memoised(self, slices: list[Slice]) -> list[Ticket] | None:
+        """The result of an earlier search of these slices, or None if they were never searched."""
+        return self._memo.get(self.key(slices))
+
     def known_keys(self) -> set[tuple]:
         """Keys of every search already done or in flight: repeating any of them is free."""
         return set(self._memo) | set(self._inflight)

@@ -33,5 +33,5 @@ def test_beating_the_optimum_raises(monkeypatch):
         return res.model_copy(update={"ranked": [top]})
 
     monkeypatch.setitem(PLANNERS, "cheat", cheat)
-    with pytest.raises(RegretBelowZero, match="extend app/sim/exhaustive.py"):
+    with pytest.raises(RegretBelowZero, match="extend app/engine/space.py"):
         run_benchmark(["cheat"], [5], [0], BENCHMARK_TRIPS[:1])

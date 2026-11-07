@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from app.bench.report import write_report
-from app.bench.run import PLANNERS, run_benchmark
+from app.bench.run import PLANNERS, all_planners, run_benchmark
 from app.bench.trips import BENCHMARK_TRIPS
 from app.sim import UNBIASED_CACHE, SimConfig
 
@@ -21,7 +21,13 @@ CACHES = {"realistic": SimConfig(), "unbiased": UNBIASED_CACHE}
 
 def main(argv: list[str] | None = None) -> None:
     p = argparse.ArgumentParser(prog="python -m app.bench", description=__doc__.splitlines()[0])
-    p.add_argument("--planners", nargs="+", default=sorted(PLANNERS), choices=sorted(PLANNERS))
+    p.add_argument(
+        "--planners",
+        nargs="+",
+        default=sorted(PLANNERS),
+        choices=all_planners(),
+        help="default: every code planner. 'llm' makes real API calls (spend cap applies); name it to run it",
+    )
     p.add_argument("--budgets", nargs="+", type=int, default=[5, 10, 20, 30])
     p.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
     p.add_argument("--trips", type=int, default=len(BENCHMARK_TRIPS), help="use the first N benchmark trips")
