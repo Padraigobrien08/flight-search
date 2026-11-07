@@ -25,7 +25,7 @@
       "milestone": "1 simulator",
       "description": "exhaustive_best(sim, trip, prefs) searches the full candidate space without a budget and returns the best ScoredItinerary; no budgeted plan can beat it.",
       "acceptance": "tests/acceptance/test_simulator.py::test_ground_truth",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F4-benchmark-run",

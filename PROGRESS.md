@@ -28,4 +28,11 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - 22 unit tests pass; F1 and F2 acceptance green.
 - Baseline change (Padraig: fix it): open-jaw bound now gets the 0.8 multi-city discount (was 12-15% high).
   Budget-10 mean best utility -1503 -> -1522 (2/10 seeds search a different hub first); budgets 20/30 unchanged. 25 tests.
+
+## 2026-11-07 — F3-ground-truth
+- `app/sim/exhaustive.py`: candidate space that contains everything plan() builds; optimum = best feasible utility.
+- 41 unit tests pass; 16 check plan() stays inside the space and never beats the optimum (3 seeds x 5 cases).
+- NETWORK.md claims 1, 2 (on fares), 4, 5, 7 hold against the optimum (`python -m app.sim.claims`).
+- Heuristic regret preview, open-jaw Lima: £254 / 107 / 68 / 68 at budgets 5 / 10 / 20 / 30; it plateaus at 16 searches.
+- Next: F4 benchmark (compute each optimum once per trip x seed x preferences).
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
