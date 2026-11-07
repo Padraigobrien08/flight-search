@@ -18,7 +18,7 @@
       "milestone": "1 simulator",
       "description": "Prices come from a hierarchical model (route level x date effect x weekday x noise), calibrated to the real fares in the spec. Saturdays cost more than Tuesdays on average; a return is cheaper than two one-ways; cached lowest prices are noisy but correlated with true lowest prices (r > 0.8).",
       "acceptance": "tests/acceptance/test_simulator.py::test_structure",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F3-ground-truth",

@@ -20,3 +20,10 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - 17 unit tests pass (+4); F1 acceptance green. Heuristic plan() runs on the sim within budget.
 - Open: network still borrowed from fixture.py private helpers; protect_oracle hook flags `2>&1` and `<email>` as writes.
 - Next: F2 hierarchical price model.
+
+## 2026-11-07 — F2-sim-structure
+- NETWORK.md first (seven stated reasons), then `network.py` (32 services, sourced anchors) and `prices.py` (SimConfig).
+- Calibrated: £763/£911/£920 against the spec's £762/£911/£915; anchors within 3%; 3-day shift median £15.
+- Cache = lowest of 4 stale observations: 6-7% optimistic on legacy long-haul, 25% on BCN; UNBIASED_CACHE about 0%.
+- 22 unit tests pass; F1 and F2 acceptance green. Open: the heuristic's open-jaw bound sits 12-15% high (question for Padraig).
+- Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
