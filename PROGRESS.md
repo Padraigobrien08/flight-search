@@ -96,4 +96,10 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
   `python -m app.race --planners llm` with a key.
 - 132 unit tests pass; backend acceptance F1-F8, F10-F13 green. Frontend specs still fail (F16-F19 not built).
 - Next: F14 preference parsing.
+
+## 2026-11-08 — F14-parse-preferences
+- POST /api/preferences/parse: "parse" model -> partial update, untrusted reply cleaned and clamped to PREFERENCE_BOUNDS.
+- OpenAILLM.with_json_schema for strict structured output; GET /api/preferences/bounds shares ranges with sliders.
+- 143 unit tests pass; backend acceptance F1-F8, F10-F14 green. Frontend specs still fail (F16-F19 not built).
+- Open: bounds are judgement calls; no labelled accuracy set yet (needs a key). Next: F15 grounded explanations.
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.

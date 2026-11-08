@@ -109,7 +109,7 @@
       "milestone": "5 API",
       "description": "POST /api/preferences/parse turns free text ('I'd pay £150 for a night in Madrid') into a partial Preferences update via the 'parse' model with structured output; values are clamped to valid ranges and unrelated text changes nothing.",
       "acceptance": "tests/acceptance/test_api.py::test_parse_preferences",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F15-explain",
