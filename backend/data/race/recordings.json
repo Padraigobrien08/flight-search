@@ -1,0 +1,564 @@
+{
+ "trip": "race-demo",
+ "seed": 0,
+ "runs": {
+  "heuristic": {
+   "5": {
+    "planner": "heuristic",
+    "budget": 5,
+    "source": "recorded",
+    "note": null,
+    "model": null,
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1692.56,
+      "regret": 226.92,
+      "hub": null,
+      "reason": "through ticket, out Fri 21 May, back Sat 05 Jun"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1688.72,
+      "regret": 223.08,
+      "hub": null,
+      "reason": "through ticket, out Sun 23 May, back Mon 07 Jun"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "through ticket, out Mon 24 May, back Tue 08 Jun"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "open-jaw fix: one-way LPB to LIM on Tue 08 Jun"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": null,
+      "reason": "EDI-LIM return to pair with the fix, home Wed 09 Jun"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   },
+   "10": {
+    "planner": "heuristic",
+    "budget": 10,
+    "source": "recorded",
+    "note": null,
+    "model": null,
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1692.56,
+      "regret": 226.92,
+      "hub": null,
+      "reason": "through ticket, out Fri 21 May, back Sat 05 Jun"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1688.72,
+      "regret": 223.08,
+      "hub": null,
+      "reason": "through ticket, out Sun 23 May, back Mon 07 Jun"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "through ticket, out Mon 24 May, back Tue 08 Jun"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "open-jaw fix: one-way LPB to LIM on Tue 08 Jun"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": null,
+      "reason": "EDI-LIM return to pair with the fix, home Wed 09 Jun"
+     },
+     {
+      "searches_used": 6,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "LON",
+      "reason": "long-haul LHR-LIM, back from LPB"
+     },
+     {
+      "searches_used": 7,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "BCN",
+      "reason": "long-haul BCN-LIM, back from LPB"
+     },
+     {
+      "searches_used": 8,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "LON",
+      "reason": "positioning EDI-STN, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 9,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "BCN",
+      "reason": "positioning EDI-BCN, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   },
+   "20": {
+    "planner": "heuristic",
+    "budget": 20,
+    "source": "recorded",
+    "note": null,
+    "model": null,
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1692.56,
+      "regret": 226.92,
+      "hub": null,
+      "reason": "through ticket, out Fri 21 May, back Sat 05 Jun"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1688.72,
+      "regret": 223.08,
+      "hub": null,
+      "reason": "through ticket, out Sun 23 May, back Mon 07 Jun"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "through ticket, out Mon 24 May, back Tue 08 Jun"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "open-jaw fix: one-way LPB to LIM on Tue 08 Jun"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": null,
+      "reason": "EDI-LIM return to pair with the fix, home Wed 09 Jun"
+     },
+     {
+      "searches_used": 6,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "LON",
+      "reason": "long-haul LHR-LIM, back from LPB"
+     },
+     {
+      "searches_used": 7,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "BCN",
+      "reason": "long-haul BCN-LIM, back from LPB"
+     },
+     {
+      "searches_used": 8,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "PAR",
+      "reason": "long-haul CDG-LIM, back from LPB"
+     },
+     {
+      "searches_used": 9,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "MAD",
+      "reason": "long-haul MAD-LIM, back from LPB"
+     },
+     {
+      "searches_used": 10,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "AMS",
+      "reason": "long-haul AMS-LIM, back from LPB"
+     },
+     {
+      "searches_used": 11,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "LIS",
+      "reason": "long-haul LIS-LIM, back from LPB"
+     },
+     {
+      "searches_used": 12,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "LON",
+      "reason": "positioning EDI-STN, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 13,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "BCN",
+      "reason": "positioning EDI-BCN, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 14,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "PAR",
+      "reason": "positioning EDI-CDG, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 15,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "MAD",
+      "reason": "positioning EDI-MAD, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 16,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "AMS",
+      "reason": "positioning EDI-AMS, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   },
+   "30": {
+    "planner": "heuristic",
+    "budget": 30,
+    "source": "recorded",
+    "note": null,
+    "model": null,
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1692.56,
+      "regret": 226.92,
+      "hub": null,
+      "reason": "through ticket, out Fri 21 May, back Sat 05 Jun"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1688.72,
+      "regret": 223.08,
+      "hub": null,
+      "reason": "through ticket, out Sun 23 May, back Mon 07 Jun"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "through ticket, out Mon 24 May, back Tue 08 Jun"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1681.55,
+      "regret": 215.91,
+      "hub": null,
+      "reason": "open-jaw fix: one-way LPB to LIM on Tue 08 Jun"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": null,
+      "reason": "EDI-LIM return to pair with the fix, home Wed 09 Jun"
+     },
+     {
+      "searches_used": 6,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "LON",
+      "reason": "long-haul LHR-LIM, back from LPB"
+     },
+     {
+      "searches_used": 7,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "BCN",
+      "reason": "long-haul BCN-LIM, back from LPB"
+     },
+     {
+      "searches_used": 8,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "PAR",
+      "reason": "long-haul CDG-LIM, back from LPB"
+     },
+     {
+      "searches_used": 9,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "MAD",
+      "reason": "long-haul MAD-LIM, back from LPB"
+     },
+     {
+      "searches_used": 10,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "AMS",
+      "reason": "long-haul AMS-LIM, back from LPB"
+     },
+     {
+      "searches_used": 11,
+      "best_utility": -1679.73,
+      "regret": 214.09,
+      "hub": "LIS",
+      "reason": "long-haul LIS-LIM, back from LPB"
+     },
+     {
+      "searches_used": 12,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "LON",
+      "reason": "positioning EDI-STN, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 13,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "BCN",
+      "reason": "positioning EDI-BCN, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 14,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "PAR",
+      "reason": "positioning EDI-CDG, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 15,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "MAD",
+      "reason": "positioning EDI-MAD, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     },
+     {
+      "searches_used": 16,
+      "best_utility": -1473.93,
+      "regret": 8.29,
+      "hub": "AMS",
+      "reason": "positioning EDI-AMS, out Sun 23 May, back Thu 10 Jun (a night in the hub each way)"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   }
+  },
+  "llm": {
+   "5": {
+    "planner": "llm",
+    "budget": 5,
+    "source": "placeholder",
+    "note": "Scripted stand-in, not a real model. Replace with: OPENAI_API_KEY=... uv run python -m app.race --planners llm",
+    "model": "scripted-stand-in (placeholder, not a model)",
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s0)"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s10)"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s11)"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s20)"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1489.13,
+      "regret": 23.49,
+      "hub": null,
+      "reason": "LLM search_route (s21)"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   },
+   "10": {
+    "planner": "llm",
+    "budget": 10,
+    "source": "placeholder",
+    "note": "Scripted stand-in, not a real model. Replace with: OPENAI_API_KEY=... uv run python -m app.race --planners llm",
+    "model": "scripted-stand-in (placeholder, not a model)",
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s0)"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s10)"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s11)"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s20)"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1489.13,
+      "regret": 23.49,
+      "hub": null,
+      "reason": "LLM search_route (s21)"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   },
+   "20": {
+    "planner": "llm",
+    "budget": 20,
+    "source": "placeholder",
+    "note": "Scripted stand-in, not a real model. Replace with: OPENAI_API_KEY=... uv run python -m app.race --planners llm",
+    "model": "scripted-stand-in (placeholder, not a model)",
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s0)"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s10)"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s11)"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s20)"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1489.13,
+      "regret": 23.49,
+      "hub": null,
+      "reason": "LLM search_route (s21)"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   },
+   "30": {
+    "planner": "llm",
+    "budget": 30,
+    "source": "placeholder",
+    "note": "Scripted stand-in, not a real model. Replace with: OPENAI_API_KEY=... uv run python -m app.race --planners llm",
+    "model": "scripted-stand-in (placeholder, not a model)",
+    "steps": [
+     {
+      "searches_used": 1,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s0)"
+     },
+     {
+      "searches_used": 2,
+      "best_utility": -1689.37,
+      "regret": 223.73,
+      "hub": null,
+      "reason": "LLM search_route (s10)"
+     },
+     {
+      "searches_used": 3,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s11)"
+     },
+     {
+      "searches_used": 4,
+      "best_utility": -1574.83,
+      "regret": 109.19,
+      "hub": null,
+      "reason": "LLM search_route (s20)"
+     },
+     {
+      "searches_used": 5,
+      "best_utility": -1489.13,
+      "regret": 23.49,
+      "hub": null,
+      "reason": "LLM search_route (s21)"
+     }
+    ],
+    "recorded_at": "2026-11-08"
+   }
+  }
+ },
+ "optimum_utility": -1465.64,
+ "trip_request": {
+  "origin": "EDI",
+  "destination": "LIM",
+  "return_from": "LPB",
+  "depart_earliest": "2027-05-21",
+  "depart_latest": "2027-05-24",
+  "return_earliest": "2027-06-05",
+  "return_latest": "2027-06-08",
+  "hubs": null,
+  "search_budget": 30
+ }
+}

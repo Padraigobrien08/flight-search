@@ -1,38 +1,31 @@
 from __future__ import annotations
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.agent import stream as ui
 from app.agent.agent import run_agent
+from app.api.deps import get_llm, get_llm_factory
 from app.api.plans import router as plans_router
+from app.api.race import router as race_router
 from app.config import Settings, get_settings
-from app.llm import LLM, ROLES, LLMFactory, llm_factory, model_for, spend_guard
+from app.llm import LLM, ROLES, model_for, spend_guard
 from app.providers.factory import cache_provider
+
+# get_llm and get_llm_factory are re-exported: tests and scripts/serve_fake.py override them via app.main.
+__all__ = ["app", "get_llm", "get_llm_factory"]
 
 app = FastAPI(title="Value-ranked flight search")
 app.include_router(plans_router)
+app.include_router(race_router)
 app.add_middleware(CORSMiddleware, allow_origins=get_settings().cors_origins, allow_methods=["*"], allow_headers=["*"])
 
 
 class ChatRequest(BaseModel):
     id: str
     messages: list[dict]
-
-
-def get_llm_factory(settings: Settings = Depends(get_settings)) -> LLMFactory:
-    """role -> LLM (parse, narrate, baseline). Tests override this with fakes."""
-    try:
-        return llm_factory(settings)
-    except RuntimeError as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
-
-
-def get_llm(factory: LLMFactory = Depends(get_llm_factory)) -> LLM:
-    """The legacy chat loop narrates, so it uses the narrate model."""
-    return factory("narrate")
 
 
 @app.get("/api/health")

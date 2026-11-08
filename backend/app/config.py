@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     currency: str = "GBP"
 
     default_search_budget: int = 30
+    race_live_per_hour: int = 3  # live /api/race runs per client per hour (replay is unlimited)
     cors_origins: list[str] = ["http://localhost:3000"]
 
 
