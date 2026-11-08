@@ -95,7 +95,7 @@
       "milestone": "5 API",
       "description": "Every plan records a trace: ordered events (cache_bound, prune, search) with hub, slices, reason and searches_used after each search. One search event per budgeted search.",
       "acceptance": "tests/acceptance/test_api.py::test_trace",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F13-race",

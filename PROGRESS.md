@@ -81,4 +81,11 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - 108 unit tests pass; backend acceptance F1-F8, F10, F11 green. Frontend specs F16-F19 fail (not built yet).
 - ui-evaluator FAIL on the legacy chat: misleading "non-stop" with a hub night, fake narration contradicting
   ranking, ±£1 vs-cheapest rounding; inputs for F16/F15. Next: F12 search trace.
+
+## 2026-11-08 — F12-search-trace
+- PlanResult.trace: ordered cache_bound / prune / search events with hub, slices, reason, searches_used.
+- BudgetedProvider logs a search event when a search is charged (numbered 1..n even with concurrency).
+- 124 unit tests pass; backend acceptance F1-F8, F10-F12 green; heuristic benchmark records unchanged.
+- Frontend specs still fail (F16-F19 not built); ui-evaluator repeats its F11 findings on the legacy chat.
+- Next: F13 race (replay + rate-limited live).
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
