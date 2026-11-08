@@ -11,6 +11,7 @@ Internal content blocks <-> Responses API items:
 
 from __future__ import annotations
 
+import copy
 import itertools
 import json
 from typing import Any
@@ -134,6 +135,13 @@ class OpenAILLM:
         self.guard = guard
         self.reasoning_effort = reasoning_effort
         self.max_output_tokens = max_output_tokens
+        self.text_format: dict | None = None
+
+    def with_json_schema(self, name: str, schema: dict) -> OpenAILLM:
+        """A copy whose replies are constrained to this JSON schema (strict structured output)."""
+        clone = copy.copy(self)
+        clone.text_format = {"type": "json_schema", "name": name, "schema": schema, "strict": True}
+        return clone
 
     async def stream_turn(self, system, tools, messages):  # noqa: ANN001, ANN201
         self.guard.check_priced(self.model)
@@ -146,6 +154,8 @@ class OpenAILLM:
         }
         if tools:
             kwargs["tools"] = to_openai_tools(tools)
+        if self.text_format:
+            kwargs["text"] = {"format": self.text_format}
         if self.reasoning_effort:
             kwargs["reasoning"] = {"effort": self.reasoning_effort}
             kwargs["include"] = ["reasoning.encrypted_content"]

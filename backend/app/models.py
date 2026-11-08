@@ -127,6 +127,23 @@ class Preferences(BaseModel):
     allow_airport_overnight: bool = False
 
 
+# Valid range for each numeric preference: sliders use these, and parsed free text is clamped to them.
+PREFERENCE_BOUNDS: dict[str, tuple[float, float]] = {
+    "value_of_hour": (0, 200),
+    "value_of_night_hour": (0, 200),
+    "per_stop": (0, 500),
+    "short_connection_penalty": (0, 500),
+    "long_connection_penalty": (0, 500),
+    "self_transfer_penalty": (0, 2000),
+    "stopover_bonus": (-500, 500),  # negative: a hub night is a cost to this person, beyond the hotel
+    "red_eye_arrival_penalty": (0, 500),
+    "hotel_cost_per_night": (0, 1000),
+    "max_journey_hours": (4, 72),
+    "max_stops": (0, 4),
+    "min_self_transfer_hours": (0.5, 24),
+}
+
+
 class TripRequest(BaseModel):
     """What the person asked for, after the LLM has structured it."""
 

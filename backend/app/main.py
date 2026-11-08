@@ -9,6 +9,7 @@ from app.agent import stream as ui
 from app.agent.agent import run_agent
 from app.api.deps import get_llm, get_llm_factory
 from app.api.plans import router as plans_router
+from app.api.preferences import router as preferences_router
 from app.api.race import router as race_router
 from app.config import Settings, get_settings
 from app.llm import LLM, ROLES, model_for, spend_guard
@@ -20,6 +21,7 @@ __all__ = ["app", "get_llm", "get_llm_factory"]
 app = FastAPI(title="Value-ranked flight search")
 app.include_router(plans_router)
 app.include_router(race_router)
+app.include_router(preferences_router)
 app.add_middleware(CORSMiddleware, allow_origins=get_settings().cors_origins, allow_methods=["*"], allow_headers=["*"])
 
 
