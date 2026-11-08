@@ -34,7 +34,7 @@ Command: `uv run python -m app.bench --out ../reports/latest`
 
 | Planner | Budget 5 | Budget 10 | Budget 20 | Budget 30 |
 | --- | --- | --- | --- | --- |
-| heuristic | 61 | 63 | 65 | 64 |
+| heuristic | 62 | 64 | 64 | 64 |
 
 ## Mean regret (£) by trip: heuristic, realistic cache
 

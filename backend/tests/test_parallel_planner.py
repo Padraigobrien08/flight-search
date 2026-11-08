@@ -11,7 +11,8 @@ from tests import serial_planner
 
 
 def same(a, b) -> bool:
-    return a.model_dump() == b.model_dump()
+    """Equal in everything but the trace, which the frozen serial planner predates (F12)."""
+    return a.model_dump(exclude={"trace"}) == b.model_dump(exclude={"trace"})
 
 
 @pytest.mark.parametrize("trip", BENCHMARK_TRIPS, ids=[t.name for t in BENCHMARK_TRIPS])

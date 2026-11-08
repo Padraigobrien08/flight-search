@@ -162,6 +162,17 @@ class PruneNote(BaseModel):
     bound: float | None = None
 
 
+class TraceEvent(BaseModel):
+    """One step of a plan, in order: a cached bound, a pruning decision, or a budgeted live search."""
+
+    kind: Literal["cache_bound", "prune", "search"]
+    hub: str | None = None
+    slices: list[Slice] | None = None
+    reason: str | None = None
+    searches_used: int | None = None  # search events: searches spent after this one
+    bound: float | None = None  # cache_bound events: cached best-case price, £
+
+
 class PlanResult(BaseModel):
     request: TripRequest
     preferences: Preferences
@@ -171,6 +182,7 @@ class PlanResult(BaseModel):
     search_budget: int
     date_pairs: list[tuple[date, date]]
     notes: list[str] = []
+    trace: list[TraceEvent] = []
     llm_usage: dict[str, int] = {}  # LLM-driven planners only: input/cached/output tokens, turns
     # Every itinerary the planner assembled, before ranking; kept for re-ranking, never serialised.
     candidates: list[Itinerary] = Field(default_factory=list, exclude=True)

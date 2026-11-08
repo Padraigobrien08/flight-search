@@ -13,7 +13,7 @@ import asyncio
 from datetime import date
 from typing import Protocol
 
-from app.models import Slice, Ticket
+from app.models import Slice, Ticket, TraceEvent
 
 
 class LiveFareProvider(Protocol):
@@ -53,6 +53,7 @@ class BudgetedProvider:
         self.used = 0
         self._memo: dict[tuple, list[Ticket]] = {}
         self._inflight: dict[tuple, asyncio.Task[list[Ticket]]] = {}
+        self.trace: list[TraceEvent] = []  # one "search" event per charged search, in charge order
 
     @property
     def remaining(self) -> int:
@@ -78,7 +79,9 @@ class BudgetedProvider:
     def exhausted(self) -> BudgetExhausted:
         return BudgetExhausted(f"search budget of {self.budget} used up")
 
-    async def search(self, slices: list[Slice], max_results: int = 5) -> list[Ticket]:
+    async def search(
+        self, slices: list[Slice], max_results: int = 5, *, reason: str | None = None, hub: str | None = None
+    ) -> list[Ticket]:
         key = self.key(slices)
         if key in self._memo:
             return self._memo[key]
@@ -87,6 +90,9 @@ class BudgetedProvider:
         if self.used >= self.budget:
             raise self.exhausted()
         self.used += 1
+        self.trace.append(
+            TraceEvent(kind="search", hub=hub, slices=list(slices), reason=reason, searches_used=self.used)
+        )
         task = asyncio.ensure_future(self._fetch(slices, max_results))
         self._inflight[key] = task
         try:

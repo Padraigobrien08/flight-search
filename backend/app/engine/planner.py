@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import itertools
 from datetime import date, timedelta
+from typing import Any
 
 from app.engine.hubs import HUBS, hubs_for
 from app.engine.journeys import build_journey
@@ -31,6 +32,7 @@ from app.models import (
     PruneNote,
     Slice,
     Ticket,
+    TraceEvent,
     TripRequest,
 )
 from app.providers.base import BudgetedProvider, BudgetExhausted, CachedFareProvider
@@ -145,22 +147,30 @@ def reprice(it: Itinerary, prefs: Preferences) -> Itinerary:
     return it.model_copy(update={"extra_cost": extra, "extra_cost_note": note})
 
 
-async def _search_prefix(live: BudgetedProvider, slice_lists: list[list[Slice]]) -> tuple[list[list[Ticket]], bool]:
+# A search to make: its slices, why (for the trace) and the hub it serves, if any.
+Planned = tuple[list[Slice], str, str | None]
+
+
+async def _run(live: BudgetedProvider, searches: list[Planned]) -> list[list[Ticket]]:
+    return list(await asyncio.gather(*(live.search(s, reason=why, hub=hub) for s, why, hub in searches)))
+
+
+async def _search_prefix(live: BudgetedProvider, searches: list[Planned]) -> tuple[list[list[Ticket]], bool]:
     """Run, concurrently, the leading searches a serial loop would get through before the budget ran out.
 
     Returns their results in order and whether the budget stopped the loop early (the serial
     version would have raised BudgetExhausted at that point).
     """
     remaining, seen, fit = live.remaining, set(), []
-    for slices in slice_lists:
-        k = live.key(slices)
-        cost = 0 if live.is_free(slices) or k in seen else 1
+    for planned in searches:
+        k = live.key(planned[0])
+        cost = 0 if live.is_free(planned[0]) or k in seen else 1
         if cost and remaining < 1:
-            return list(await asyncio.gather(*(live.search(s) for s in fit))), True
+            return await _run(live, fit), True
         remaining -= cost
         seen.add(k)
-        fit.append(slices)
-    return list(await asyncio.gather(*(live.search(s) for s in fit))), False
+        fit.append(planned)
+    return await _run(live, fit), False
 
 
 async def plan(
@@ -178,10 +188,20 @@ async def plan(
     candidates: list[Itinerary] = []
     pairs = sample_date_pairs(req)
     open_jaw = req.end_airport != req.destination
+    trace_start = len(live.trace)
+
+    def note(**event: Any) -> None:  # planner decisions go in the same ordered log as the searches
+        live.trace.append(TraceEvent(**event))
 
     try:
         # 2. Through tickets: the baseline. (Wave 1.)
-        results, stopped = await _search_prefix(live, [_through_slices(req, d, r) for d, r in pairs])
+        results, stopped = await _search_prefix(
+            live,
+            [
+                (_through_slices(req, d, r), f"through ticket, out {d:%a %d %b}, back {r:%a %d %b}", None)
+                for d, r in pairs
+            ],
+        )
         through_by_pair: dict[tuple[date, date], list[Ticket]] = {}
         for (d, r), tickets in zip(pairs, results, strict=False):
             through_by_pair[(d, r)] = tickets
@@ -202,6 +222,7 @@ async def plan(
 
         # 5. Open-jaw alternative: return to the destination, plus a one-way from the end city.
         fix_slices: list[list[Slice]] = []
+        fix_searches: list[Planned] = []
         if open_jaw:
             fix_slices = [
                 [Slice(origin=req.end_airport, destination=req.destination, date=r)],
@@ -210,12 +231,20 @@ async def plan(
                     Slice(origin=req.destination, destination=req.origin, date=r + timedelta(days=1)),
                 ],
             ]
+            fix_searches = [
+                (fix_slices[0], f"open-jaw fix: one-way {req.end_airport} to {req.destination} on {r:%a %d %b}", None),
+                (
+                    fix_slices[1],
+                    f"{req.origin}-{req.destination} return to pair with the fix, home {r + timedelta(days=1):%a %d %b}",
+                    None,
+                ),
+            ]
         # The serial planner searched the fix before bounding hubs; if the fix doesn't fit, it stopped there.
         budget_left, seen = live.remaining, set()
         for slices in fix_slices:
             cost = 0 if live.is_free(slices) or live.key(slices) in seen else 1
             if cost and budget_left < 1:
-                await _search_prefix(live, fix_slices)
+                await _search_prefix(live, fix_searches)
                 raise live.exhausted()
             budget_left -= cost
             seen.add(live.key(slices))
@@ -228,11 +257,21 @@ async def plan(
             long = await longhaul_bound(cache, req, hub.longhaul_airport, d, r)
             if not pos or long is None:
                 bounded.append((float("inf"), code))  # unknown: search last
+                note(
+                    kind="cache_bound", hub=code, reason="no cached price for this hub: searched last if budget allows"
+                )
                 continue
             # Optimistic utility: cached fares, no stops, the hub nights worth their bonus,
             # and only 80% of the fastest through routing's travel time.
             price_bound = min(pos) + long + 2 * prefs.hotel_cost_per_night
             u_bound = -price_bound + 2 * prefs.stopover_bonus - prefs.value_of_hour * 0.8 * fastest_hours
+            note(
+                kind="cache_bound",
+                hub=code,
+                bound=round(price_bound, 2),
+                reason=f"cached positioning £{min(pos):.0f} + long-haul £{long:.0f} + 2 hotel nights; "
+                f"best-case score {u_bound:.0f} vs {baseline_u:.0f} to beat",
+            )
             if u_bound < baseline_u:
                 pruned.append(
                     PruneNote(
@@ -242,6 +281,7 @@ async def plan(
                         f"(cached fares + hotels ≈ £{price_bound:.0f})",
                     )
                 )
+                note(kind="prune", hub=code, bound=round(price_bound, 2), reason=pruned[-1].reason)
             else:
                 bounded.append((-u_bound, code))
         bounded.sort()
@@ -321,10 +361,17 @@ async def plan(
         fix_results: list[list[Ticket]] | None = None
         while True:
             need = [s[1] for s in replay(longs) if s[0] == "unknown"]
-            batch = (fix_slices if fix_results is None else []) + [long_slices(c) for c in need]
+            batch = (fix_searches if fix_results is None else []) + [
+                (
+                    long_slices(c),
+                    f"long-haul {HUBS[c].longhaul_airport}-{req.destination}, back from {req.end_airport}",
+                    c,
+                )
+                for c in need
+            ]
             if not batch:
                 break
-            got = list(await asyncio.gather(*(live.search(s) for s in batch)))
+            got = await _run(live, batch)
             if fix_results is None:
                 fix_results, got = got[: len(fix_slices)], got[len(fix_slices) :]
             longs.update(zip(need, got, strict=True))
@@ -339,11 +386,26 @@ async def plan(
                 if it:
                     candidates.append(it)
 
+        for step in steps:  # the hub loop's pruning decisions, now final
+            if step[0] == "skip":
+                note(kind="prune", hub=step[1], reason="search budget used up")
+            elif step[0] == "no-long":
+                note(kind="prune", hub=step[1], reason="no long-haul fares found")
+
         # Wave 3: every positioning search at once.
-        wanted = [slices for s in steps if s[0] == "hub" for _, slices in s[2]]
-        pos_results = dict(
-            zip(map(live.key, wanted), await asyncio.gather(*(live.search(s) for s in wanted)), strict=True)
-        )
+        wanted: list[Planned] = [
+            (
+                slices,
+                f"positioning {req.origin}-{slices[0].destination}, out {slices[0].date:%a %d %b}, "
+                f"back {slices[1].date:%a %d %b}"
+                + (" (a night in the hub each way)" if pos_out < d else " (same-day connections)"),
+                s[1],
+            )
+            for s in steps
+            if s[0] == "hub"
+            for pos_out, slices in s[2]
+        ]
+        pos_results = dict(zip((live.key(w[0]) for w in wanted), await _run(live, wanted), strict=True))
 
         for step in steps:
             if step[0] == "skip":
@@ -382,5 +444,6 @@ async def plan(
         search_budget=live.budget,
         date_pairs=pairs,
         notes=notes,
+        trace=live.trace[trace_start:],
         candidates=candidates,
     )

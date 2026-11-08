@@ -26,7 +26,7 @@ from app.engine.hubs import HUBS, hubs_for
 from app.engine.space import candidates
 from app.engine.utility import rank, score
 from app.llm.base import LLM, TurnResult
-from app.models import Itinerary, PlanResult, Preferences, Slice, Ticket, TripRequest
+from app.models import Itinerary, PlanResult, Preferences, Slice, Ticket, TraceEvent, TripRequest
 from app.providers.base import BudgetedProvider, BudgetExhausted, CachedFareProvider
 
 MAX_CACHE_LOOKUPS = 300
@@ -190,6 +190,7 @@ async def llm_plan(
     usage = {"input_tokens": 0, "cached_tokens": 0, "output_tokens": 0, "turns": 0}
     notes: list[str] = []
     cache_lookups = 0
+    trace_start = len(live.trace)
 
     async def run_tool(block: dict) -> str:
         nonlocal cache_lookups
@@ -198,7 +199,9 @@ async def llm_plan(
             if name == "search_route":
                 a = SearchRouteArgs.model_validate(args)
                 try:
-                    tickets = await live.search(a.slices(), max_results=RESULTS_PER_SEARCH)
+                    tickets = await live.search(
+                        a.slices(), max_results=RESULTS_PER_SEARCH, reason=f"LLM search_route ({block.get('id')})"
+                    )
                 except BudgetExhausted:
                     return json.dumps({"error": "search budget used up", "remaining_budget": 0})
                 return json.dumps({"remaining_budget": live.remaining, "tickets": [_ticket_view(t) for t in tickets]})
@@ -208,6 +211,12 @@ async def llm_plan(
                     return json.dumps({"error": f"cache lookup limit of {MAX_CACHE_LOOKUPS} reached"})
                 a = CachedPriceArgs.model_validate(args)
                 price = await cache.lowest_price(a.origin.upper(), a.destination.upper(), a.date, a.return_date)
+                route = f"{a.origin.upper()}-{a.destination.upper()} {a.date}" + (
+                    f", back {a.return_date}" if a.return_date else ""
+                )
+                live.trace.append(
+                    TraceEvent(kind="cache_bound", bound=price, reason=f"LLM cached_price ({block.get('id')}): {route}")
+                )
                 return json.dumps({"cached_lowest_gbp": price})
             if name == "best_so_far":
                 best = await _ranked(req, prefs, live, 3)
@@ -269,6 +278,7 @@ async def llm_plan(
         search_budget=live.budget,
         date_pairs=[],
         notes=notes,
+        trace=live.trace[trace_start:],
         llm_usage=usage,
         candidates=built,
     )
