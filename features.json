@@ -102,7 +102,7 @@
       "milestone": "5 API",
       "description": "POST /api/race returns, per planner, the best-so-far utility and regret after each search. mode=replay serves recorded runs instantly; mode=live runs fresh and is rate-limited per client (HTTP 429).",
       "acceptance": "tests/acceptance/test_api.py::test_race",
-      "passes": false
+      "passes": true
     },
     {
       "id": "F14-parse-preferences",

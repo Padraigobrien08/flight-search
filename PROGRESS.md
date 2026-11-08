@@ -88,4 +88,12 @@ Newest last. Each session appends 3–6 lines: feature, what changed, metric del
 - 124 unit tests pass; backend acceptance F1-F8, F10-F12 green; heuristic benchmark records unchanged.
 - Frontend specs still fail (F16-F19 not built); ui-evaluator repeats its F11 findings on the legacy chat.
 - Next: F13 race (replay + rate-limited live).
+
+## 2026-11-08 — F13-race
+- POST /api/race: per-search best-so-far utility and regret per planner; replay from data/race/recordings.json,
+  live runs limited per client per hour (429).
+- Heuristic recordings are real; llm recordings are a labelled placeholder (scripted stand-in) until Padraig runs
+  `python -m app.race --planners llm` with a key.
+- 132 unit tests pass; backend acceptance F1-F8, F10-F13 green. Frontend specs still fail (F16-F19 not built).
+- Next: F14 preference parsing.
 - Next: F3 exhaustive optimum, which also checks NETWORK.md #1 and #4.
